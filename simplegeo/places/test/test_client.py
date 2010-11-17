@@ -2,9 +2,8 @@ import time
 import random
 import unittest
 import simplejson as json
-import geohash
 import random
-from simplegeo import Client, Record, APIError
+from simplegeo.places import Client, Record, APIError
 
 MY_OAUTH_KEY = 'MY_OAUTH_KEY'
 MY_OAUTH_SECRET = 'MY_SECRET_KEY'

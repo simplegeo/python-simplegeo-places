@@ -6,3 +6,12 @@ except ImportError:
     pass
 
 API_VERSION = '0.1'
+
+class Client:
+    pass
+
+class Record:
+    pass
+
+class APIError:
+    pass
