@@ -1,5 +1,5 @@
 import unittest
-from simplegeo import Record
+from simplegeo.places import Record
 
 class RecordTest(unittest.TestCase):
 
