@@ -30,4 +30,4 @@ setup(name=PKG,
       keywords="simplegeo",
       zip_safe=False, # actually it is zip safe, but zipping packages doesn't help with anything and can cause some problems (http://bugs.python.org/setuptools/issue33 )
       namespace_packages = ['simplegeo'],
-      tests_require=['nose', 'coverage'])
+      tests_require=['nose', 'coverage', 'mock'])

@@ -1,9 +1,4 @@
-__version__ = "unknown"
-try:
-    from _version import __version__
-except ImportError:
-    # We're running in a tree that doesn't have a version number in _version.py.
-    pass
+from _version import __version__
 
 API_VERSION = '0.1'
 
@@ -27,8 +22,7 @@ class Record:
 
     @classmethod
     def from_dict(cls, data):
-        if not data:
-            return None
+        assert data
         coord = data['geometry']['coordinates']
         record = cls(data['properties']['layer'], data['id'], lat=coord[1], lon=coord[0])
         record.type = data['properties']['type']
