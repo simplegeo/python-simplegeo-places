@@ -1,3 +1,31 @@
+python-simplegeo-places (0.9.0) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * more skeleton -- empty classes that the tests (which were just
+    copied in from python-simplegeo) are trying to import
+  * copy in the constructors of Record from python-simplegeo, causing
+    test_record_from_dict() to go green also add
+    simplegeo/places/test/test_record.py~, just because there is
+    something screwed up in git and this might fix it: You have
+    uncommitted changes in your source tree:
+  * remove simplegeo/places/test/test_record.py~
+  * add dummy file in attempt to clean up mess: x You have uncommitted
+    changes in your source tree: x # On branch master x # Changed but
+    not updated: x #   (use "git add/rm <file>..." to update what will
+    be committed) x #   (use "git checkout -- <file>..." to discard
+    changes in working directory) x # x # deleted:
+    simplegeo/places/test/test_record.py~
+  * remove backup file
+  * add dummy backup file in attempt to clean up this mess: You have
+    uncommitted changes in your source tree:
+  * constructor for Record, tests thereof
+  * rename package to "python-simplegeo-places" in setup.py
+  * remove backup file
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Fri, 19 Nov 2010 23:20:34 +0000
+
 python-simplegeo-places (0.9.0) unstable; urgency=low
 
   * initial version
