@@ -33,9 +33,8 @@ tests_require = ['mock']
 # tests_require.extend(['setuptools_trial', 'trialcoverage'])
 
 # As of 2010-11-22 neither of the above options appear to work to
-# generate code coverage results, but the following does: rm -rf
-# ./.coverage* htmlcov ; coverage run --branch setup.py test -s simplegeo.places.test &&
-# coverage html --branch
+# generate code coverage results, but the following does:
+# rm -rf ./.coverage* htmlcov ; coverage run --branch  --include=simplegeo/* setup.py test -s simplegeo.places.test && coverage html
 
 setup(name=PKG,
       version=verstr,
