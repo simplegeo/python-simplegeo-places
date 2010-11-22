@@ -60,7 +60,7 @@ class RecordTest(unittest.TestCase):
         record_dict = { 'created' : 98,
                      'geometry' : {
                                    'type' : 'Point',
-                                   'coordinates' : [D('10.0'), D('11.0')]
+                                   'coordinates' : [D('10.03'), D('11.0')]
                                    },
                      'id' : 'my_id',
                      'type' : 'Feature',
@@ -73,14 +73,14 @@ class RecordTest(unittest.TestCase):
 
         record = Record.from_dict(record_dict)
         self.assertEquals(record.lat, D('11.0'))
-        self.assertEquals(record.lon, D('10.0'))
+        self.assertEquals(record.lon, D('10.03'))
         self.assertEquals(record.id, 'my_id')
         self.assertEquals(record.layer, 'my_layer')
         self.assertEquals(record.key, 'value')
         self.assertEquals(record.type, 'object')
         self.assertEquals(record.created, 98)
 
-        self.assertEquals('{"geometry": {"type": "Point", "coordinates": [10.0, 11.0]}, "properties": {"layer": "my_layer", "type": "object", "key": "value"}, "type": "Feature", "id": "my_id", "created": 98}', record.to_json())
+        self.assertEquals('{"geometry": {"type": "Point", "coordinates": [10.03, 11.0]}, "properties": {"layer": "my_layer", "type": "object", "key": "value"}, "type": "Feature", "id": "my_id", "created": 98}', record.to_json())
 
         record_dict = { 'created' : 97,
                      'geometry' : {
