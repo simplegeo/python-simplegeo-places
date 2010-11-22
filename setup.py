@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 import os, re
 
 PKG='simplegeo-places'
-VERSIONFILE = os.path.join(PKG, '_version.py')
+VERSIONFILE = os.path.join('simplegeo', 'places', '_version.py')
 verstr = "unknown"
 try:
     verstrline = open(VERSIONFILE, "rt").read()
