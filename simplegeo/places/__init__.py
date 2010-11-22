@@ -13,17 +13,8 @@ class Client(object):
     realm = "http://api.simplegeo.com"
     debug = False
     endpoints = {
-        'record': 'records/%(layer)s/%(id)s.json',
-        'records': 'records/%(layer)s/%(ids)s.json',
-        'add_records': 'records/%(layer)s.json',
-        'history': 'records/%(layer)s/%(id)s/history.json',
-        'nearby': 'records/%(layer)s/nearby/%(arg)s.json',
-        'nearby_address': 'nearby/address/%(lat)s,%(lon)s.json',
-        'density_day': 'density/%(day)s/%(lat)s,%(lon)s.json',
-        'density_hour': 'density/%(day)s/%(hour)s/%(lat)s,%(lon)s.json',
-        'layer': 'layer/%(layer)s.json',
-        'contains' : 'contains/%(lat)s,%(lon)s.json',
-        'boundary' : 'boundary/%(id)s.json'        
+        'record': 'record/%(layer)s/%(id)s.json',
+        'records': 'records/%(layer)s.json',
     }
 
     def __init__(self, key, secret, api_version=API_VERSION, host="api.simplegeo.com", port=80):
@@ -36,12 +27,6 @@ class Client(object):
         self.signature = oauth.SignatureMethod_HMAC_SHA1()
         self.uri = "http://%s:%s" % (host, port)
         self.http = Http()
-
-    def __unicode__(self):
-        return "%s (key=%s, secret=%s)" % (self.uri, self.key, self.secret)
-
-    def __repr__(self):
-        return self.__unicode__()
 
     def endpoint(self, name, **kwargs):
         try:
@@ -66,56 +51,8 @@ class Client(object):
             'type': 'FeatureCollection',
             'features': [record.to_dict() for record in records],
         }
-        endpoint = self.endpoint('add_records', layer=layer)
+        endpoint = self.endpoint('records', layer=layer)
         self._request(endpoint, "POST", json.dumps(features))
-
-    def delete_record(self, layer, id):
-        endpoint = self.endpoint('record', layer=layer, id=id)
-        self._request(endpoint, "DELETE")
-
-    def get_record(self, layer, id):
-        endpoint = self.endpoint('record', layer=layer, id=id)
-        return self._request(endpoint, "GET")
-
-    def get_records(self, layer, ids):
-        endpoint = self.endpoint('records', layer=layer, ids=','.join(ids))
-        features = self._request(endpoint, "GET")
-        return features.get('features') or []
-
-    def get_history(self, layer, id, **kwargs):
-        endpoint = self.endpoint('history', layer=layer, id=id)
-        return self._request(endpoint, "GET", data=kwargs)
-
-    def get_nearby(self, layer, lat, lon, **kwargs):
-        endpoint = self.endpoint('nearby', layer=layer, arg='%s,%s' % (lat, lon))
-        return self._request(endpoint, "GET", data=kwargs)
-
-    def get_nearby_geohash(self, layer, geohash, **kwargs):
-        endpoint = self.endpoint('nearby', layer=layer, arg=geohash)
-        return self._request(endpoint, "GET", data=kwargs)
-
-    def get_nearby_address(self, lat, lon):
-        endpoint = self.endpoint('nearby_address', lat=lat, lon=lon)
-        return self._request(endpoint, "GET")
-
-    def get_layer(self, layer):
-        endpoint = self.endpoint('layer', layer=layer)
-        return self._request(endpoint, "GET")
-
-    def get_density(self, lat, lon, day, hour=None):
-        if hour is not None:
-            endpoint = self.endpoint('density_hour', lat=lat, lon=lon, day=day, hour=hour)
-        else:
-            endpoint = self.endpoint('density_day', lat=lat, lon=lon, day=day)
-        return self._request(endpoint, "GET")
-
-    def get_boundary(self, id):
-        endpoint = self.endpoint('boundary', id=id)
-        return self._request(endpoint, "GET")
-
-    def get_contains(self, lat, lon):
-        endpoint = self.endpoint('contains', lat=lat, lon=lon)
-        return self._request(endpoint, "GET")
 
     def _request(self, endpoint, method, data=None):
         body = None
