@@ -15,17 +15,9 @@ MY_OAUTH_KEY = 'MY_OAUTH_KEY'
 MY_OAUTH_SECRET = 'MY_SECRET_KEY'
 TESTING_LAYER = 'TESTING_LAYER'
 
-API_VERSION = '0.1'
+API_VERSION = '0.2'
 API_HOST = 'api.simplegeo.com'
 API_PORT = 80
-
-
-TESTING_LAT = '37.7481624945'
-TESTING_LON = '-122.433287165'
-
-TESTING_LAT_NON_US = '48.8566667'
-TESTING_LON_NON_US = '2.3509871'
-RECORD_TYPES = ['person', 'place', 'object']
 
 class ClientTest(unittest.TestCase):
     def setUp(self):
@@ -54,7 +46,7 @@ class ClientTest(unittest.TestCase):
         record = self._record()
         self.client.add_record(record)
         self.failUnlessEqual(mockhttp.method_calls[0][0], 'request')
-        self.failUnlessEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/0.1/records/TESTING_LAYER/1.json')
+        self.failUnlessEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/record/TESTING_LAYER/1.json' % (API_VERSION,))
         self.failUnlessEqual(mockhttp.method_calls[0][1][1], 'PUT')
         self.failUnlessEqual(mockhttp.method_calls[0][2]['body'], record.to_json())
 
@@ -72,6 +64,6 @@ class ClientTest(unittest.TestCase):
         self.client.add_records(TESTING_LAYER, feats)
 
         self.failUnlessEqual(mockhttp.method_calls[0][0], 'request')
-        self.failUnlessEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/0.1/records/TESTING_LAYER.json')
+        self.failUnlessEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/records/TESTING_LAYER.json' % (API_VERSION,))
         self.failUnlessEqual(mockhttp.method_calls[0][1][1], 'POST')
         self.failUnlessEqual(mockhttp.method_calls[0][2]['body'], json.dumps(featcoll))
