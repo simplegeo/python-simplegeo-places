@@ -10,8 +10,8 @@ include /usr/share/cdbs/1/class/python-distutils.mk
 # Add here any variable or target overrides you need.
 
 install/python-simplegeo-places::
-	coverage run --branch --include=simplegeo/* setup.py test -s simplegeo.places.test
-	coverage xml -o $(ARTIFACTS)/xunit.xml
-	coverage html -d $(ARTIFACTS)/htmlcov
+	python-coverage run --branch --include=simplegeo/* setup.py test -s simplegeo.places.test
+	python-coverage xml -o $(ARTIFACTS)/xunit.xml
+	python-coverage html -d $(ARTIFACTS)/htmlcov
 
 
