@@ -7,7 +7,7 @@ VIRTUALENV  = $(shell /bin/echo -n `which virtualenv || \
 VIRTUALENV += --no-site-packages
 PAGER      ?= less
 DEPS       := $(shell find $(PWD)/deps -type f -printf "file://%p ")
-COVERAGE    = $(shell test -x bin/coverage && echo bin/coverage || echo true)
+COVERAGE    = coverage
 SETUP       = $(PYTHON) ./setup.py
 EZ_INSTALL  = $(SETUP) easy_install -f "$(DEPS)"
 PYLINT      = bin/pylint
@@ -46,7 +46,7 @@ deb: debian/changelog
 	test -d dist/deb || mkdir -p dist/deb
 	mv ../python-simplegeo_* dist/deb
 
-test: bin/nosetests
+test:
 	$(SETUP) test
 
 xunit.xml: bin/nosetests $(SOURCES) $(TESTS)
@@ -61,8 +61,8 @@ coverage: .coverage
 coverage.xml: .coverage
 	@$(COVERAGE) xml $(COVERED)
 
-.coverage: $(SOURCES) $(TESTS) bin/coverage bin/nosetests
-	-@$(COVERAGE) run --branch bin/nosetests -q
+.coverage: $(SOURCES) $(TESTS)
+	-@$(COVERAGE) run --branch setup.py test -s simplegeo.places.test
 
 bin/coverage: bin/easy_install
 	@$(EZ_INSTALL) coverage
