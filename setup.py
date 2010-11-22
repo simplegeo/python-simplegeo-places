@@ -18,6 +18,20 @@ else:
         print "unable to find version in %s" % (VERSIONFILE,)
         raise RuntimeError("if %s.py exists, it must be well-formed" % (VERSIONFILE,))
 
+setup_requires = []
+tests_require = ['mock']
+
+# nosetests is an optional way to get code-coverage results. Uncomment
+# the following and run "python setup.py nosetests --with-coverage.
+# --cover-erase --cover-tests --cover-inclusive --cover-html"
+# tests_require.extend(['coverage', 'nose'])
+
+# trialcoverage is another optional way to get code-coverage
+# results. Uncomment the following and run "python setup.py trial
+# --reporter=bwverbose-coverage -s simplegeo.places.test".
+# setup_requires.append('setuptools_trial')
+# tests_require.extend(['setuptools_trial', 'trialcoverage'])
+
 setup(name=PKG,
       version=verstr,
       description="Library for interfacing with SimpleGeo's Places API",
@@ -26,8 +40,9 @@ setup(name=PKG,
       url="http://github.com/simplegeo/python-simplegeo-places",
       packages = find_packages(),
       license = "MIT License",
-      install_requires=['httplib2>=0.6.0', 'oauth2>=1.1.3', 'simplejson>=2.0.9'],
+      install_requires=['httplib2>=0.6.0', 'oauth2>=1.1.3', 'jsonutil>=1.0.0'],
       keywords="simplegeo",
       zip_safe=False, # actually it is zip safe, but zipping packages doesn't help with anything and can cause some problems (http://bugs.python.org/setuptools/issue33 )
       namespace_packages = ['simplegeo'],
-      tests_require=['nose', 'coverage', 'mock'])
+      setup_requires=setup_requires,
+      tests_require=tests_require)
