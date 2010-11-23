@@ -1,3 +1,24 @@
+python-simplegeo-places (1.2.37) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add test that it preserves the precise lat/lon that you entered
+    (which is why we care about using Decimal instead of float when it
+    makes sense to do so)
+  * try to hook up test/coverage so that it will get invoked inside
+    debian pbuild world and the results thereof will get spurted back
+    out into hudson world
+  * add python-coverage as a build-dep in debian/control
+  * debian renamed "coverage" to "python-coverage"
+  * add dep on python-simplejson >= 2.1.0
+  * fix up unit tests to test a plausible API (probably not the real API
+    though)
+  * fix python setup.py --version
+  * version bump
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 23 Nov 2010 00:06:25 +0000
+
 python-simplegeo-places (0.9.1) unstable; urgency=low
 
   * first working version
