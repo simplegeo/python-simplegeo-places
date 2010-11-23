@@ -15,9 +15,11 @@ MY_OAUTH_KEY = 'MY_OAUTH_KEY'
 MY_OAUTH_SECRET = 'MY_SECRET_KEY'
 TESTING_LAYER = 'TESTING_LAYER'
 
-API_VERSION = '0.2'
+API_VERSION = '1.0'
 API_HOST = 'api.simplegeo.com'
 API_PORT = 80
+
+ENDPOINT_DESCR=json.dumps({"GET /1.0/places/<place_id:[a-zA-Z0-9\\.,_-]+>.json": "Return a record for a place.", "GET /1.0/endpoints.json": "Describe known endpoints.", "POST /1.0/places/<place_id:.*>.json": "Update a record.", "GET /1.0/places/<lat:-?[0-9\\.]+>,<lon:-?[0-9\\.]+>/search.json": "Search for places near a lat/lon.", "PUT /1.0/places/place.json": "Create a new record, returns a 301 to the location of the resource.", "GET /1.0/debug/<number:\\d+>": "Undocumented.", "DELETE /1.0/places/<place_id:.*>.json": "Delete a record."})
 
 class ClientTest(unittest.TestCase):
     def setUp(self):
@@ -39,18 +41,32 @@ class ClientTest(unittest.TestCase):
             lon=self.record_lon
         )
 
+    def test_wrong_endpoint(self):
+        self.assertRaises(Exception, self.client.endpoint, 'recordt')
+
+    def test_missing_argument(self):
+        self.assertRaises(Exception, self.client.endpoint, 'record')
+
+    def test_endpoint_descriptions(self):
+        mockhttp = mock.Mock()
+        mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json'}, ENDPOINT_DESCR)
+        self.client.http = mockhttp
+        d = self.client.get_endpoint_descriptions()
+        self.failUnless(isinstance(d, dict), d)
+
     def test_add_record(self):
         mockhttp = mock.Mock()
-        mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json'}, None)
+        newloc = 'http://api.simplegeo.com:80/%s/places/abcdefghijklmnopqrstuvwxyz.json' % (API_VERSION,)
+        mockhttp.request.return_value = ({'status': '301', 'content-type': 'application/json', 'location': newloc}, json.dumps("Yo dawg, go to the new location: '%s'" % (newloc,)))
         self.client.http = mockhttp
         record = self._record()
         self.client.add_record(record)
-        self.failUnlessEqual(mockhttp.method_calls[0][0], 'request')
-        self.failUnlessEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/record/TESTING_LAYER/1.json' % (API_VERSION,))
-        self.failUnlessEqual(mockhttp.method_calls[0][1][1], 'PUT')
-        self.failUnlessEqual(mockhttp.method_calls[0][2]['body'], record.to_json())
+        self.assertEqual(mockhttp.method_calls[0][0], 'request')
+        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/place.json' % (API_VERSION,))
+        self.assertEqual(mockhttp.method_calls[0][1][1], 'PUT')
+        self.assertEqual(mockhttp.method_calls[0][2]['body'], record.to_json())
 
-    def test_multi_record_post(self):
+    def DISABLED_test_multi_record_post(self):
         feats = [self._record() for i in range(10)]
         featcoll = {
             'type': 'FeatureCollection',
@@ -63,7 +79,7 @@ class ClientTest(unittest.TestCase):
 
         self.client.add_records(TESTING_LAYER, feats)
 
-        self.failUnlessEqual(mockhttp.method_calls[0][0], 'request')
-        self.failUnlessEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/records/TESTING_LAYER.json' % (API_VERSION,))
-        self.failUnlessEqual(mockhttp.method_calls[0][1][1], 'POST')
-        self.failUnlessEqual(mockhttp.method_calls[0][2]['body'], json.dumps(featcoll))
+        self.assertEqual(mockhttp.method_calls[0][0], 'request')
+        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/place.json' % (API_VERSION,))
+        self.assertEqual(mockhttp.method_calls[0][1][1], 'POST')
+        self.assertEqual(mockhttp.method_calls[0][2]['body'], json.dumps(featcoll))

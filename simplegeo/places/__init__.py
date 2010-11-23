@@ -1,6 +1,6 @@
 from _version import __version__
 
-API_VERSION = '0.1'
+API_VERSION = '1.0'
 
 from httplib2 import Http
 import oauth2 as oauth
@@ -9,10 +9,15 @@ import time
 
 from jsonutil import jsonutil as json
 
+# {"GET /1.0/places/<place_id:[a-zA-Z0-9\\.,_-]+>.json": "Return a record for a place.", "GET /1.0/endpoints.json": "Describe known endpoints.", "POST /1.0/places/<place_id:.*>.json": "Update a record.", "GET /1.0/places/<lat:-?[0-9\\.]+>,<lon:-?[0-9\\.]+>/search.json": "Search for places near a lat/lon.", "PUT /1.0/places/place.json": "Create a new record, returns a 301 to the location of the resource.", "GET /1.0/debug/<number:\\d+>": "Undocumented.", "DELETE /1.0/places/<place_id:.*>.json": "Delete a record."}
+
+
 class Client(object):
     realm = "http://api.simplegeo.com"
-    debug = False
     endpoints = {
+        'endpoints': 'endpoints.json',
+        'place': 'places/place.json',
+
         'record': 'record/%(layer)s/%(id)s.json',
         'records': 'records/%(layer)s.json',
     }
@@ -28,6 +33,9 @@ class Client(object):
         self.uri = "http://%s:%s" % (host, port)
         self.http = Http()
 
+    def get_endpoint_descriptions(self):
+        return self._request(self.endpoint('endpoints'), 'GET')
+
     def endpoint(self, name, **kwargs):
         try:
             endpoint = self.endpoints[name]
@@ -40,10 +48,7 @@ class Client(object):
         return urljoin(urljoin(self.uri, self.api_version + '/'), endpoint)
 
     def add_record(self, record):
-        if not hasattr(record, 'layer'):
-            raise Exception("Record has no layer.")
-
-        endpoint = self.endpoint('record', layer=record.layer, id=record.id)
+        endpoint = self.endpoint('place')
         self._request(endpoint, "PUT", record.to_json())
 
     def add_records(self, layer, records):
@@ -64,8 +69,6 @@ class Client(object):
                 body = urllib.urlencode(data)
             else:
                 body = data
-        if self.debug:
-            print endpoint
         request = oauth.Request.from_consumer_and_token(self.consumer,
             http_method=method, http_url=endpoint, parameters=params)
 
@@ -75,17 +78,13 @@ class Client(object):
 
         resp, content = self.http.request(endpoint, method, body=body, headers=headers)
 
-        if self.debug:
-            print resp
-            print content
-
         if content: # Empty body is allowed.
             try:
                 content = json.loads(content)
-            except ValueError:
+            except ValueError, le:
                 raise DecodeError(resp, content)
 
-        if resp['status'][0] != '2':
+        if resp['status'][0] not in ('2', '3'):
             code = resp['status']
             message = content
             if isinstance(content, dict):
@@ -158,4 +157,14 @@ class APIError(Exception):
 
     def __repr__(self):
         return "%s (#%s)" % (self.msg, self.code)
+
+class DecodeError(APIError):
+    """There was a problem decoding the API's JSON response."""
+
+    def __init__(self, headers, body):
+        super(DecodeError, self).__init__(None, "Could not decode JSON", headers)
+        self.body = body
+
+    def __repr__(self):
+        return "headers: %s, content: <%s>" % (self.headers, self.body)
 
