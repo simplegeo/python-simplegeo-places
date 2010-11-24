@@ -1,3 +1,12 @@
+python-simplegeo-places (1.2.39) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * update the record-creation code to match Ian's HTTP API
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 24 Nov 2010 17:30:09 +0000
+
 python-simplegeo-places (1.2.38) lucid; urgency=low
 
   [ Zooko Ofsimplegeo ]
