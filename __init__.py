@@ -53,6 +53,10 @@ class Client(object):
         endpoint = self.endpoint('places', simplegeoid=simplegeoid)
         return self._request(endpoint, 'GET')
 
+    def update_record(self, record):
+        endpoint = self.endpoint('places', simplegeoid=record.id)
+        return self._request(endpoint, 'POST')
+
     def add_records(self, layer, records):
         features = {
             'type': 'FeatureCollection',
