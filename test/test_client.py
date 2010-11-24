@@ -23,7 +23,7 @@ ENDPOINT_DESCR=json.dumps({
         "GET /1.0/places/<place_id:[a-zA-Z0-9\\.,_-]+>.json": "Return a record for a place.",
         "GET /1.0/endpoints.json": "Describe known endpoints.",
         "POST /1.0/places/<place_id:.*>.json": "Update a record.",
-        "GET /1.0/places/<lat:-?[0-9\\.]+>,<lon:-?[0-9\\.]+>/search.json": "Search for places near a lat/lon.",
+        "GET /1.0/places/<lat:-?[0-9\\.]+>,<lon:-?[0-9\\.]+>/search.json": "Search for places near a lat/lon. Query string includes ?q=term and ?q=term&category=cat",
         "PUT /1.0/places/place.json": "Create a new record, returns a 301 to the location of the resource.",
         "GET /1.0/debug/<number:\\d+>": "Undocumented.",
         "DELETE /1.0/places/<place_id:.*>.json": "Delete a record."})
@@ -63,7 +63,7 @@ class ClientTest(unittest.TestCase):
 
     def test_add_record(self):
         mockhttp = mock.Mock()
-        newloc = 'http://api.simplegeo.com:80/%s/places/abcdefghijklmnopqrstuvwxyz.json' % (API_VERSION,)
+        newloc = 'http://api.simplegeo.com:80/%s/places/abcdefghijklmnopqrstuvwyz.json' % (API_VERSION,)
         mockhttp.request.return_value = ({'status': '301', 'content-type': 'application/json', 'location': newloc}, json.dumps("Yo dawg, go to the new location: '%s'" % (newloc,)))
         self.client.http = mockhttp
         record = self._record()
@@ -74,7 +74,7 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(mockhttp.method_calls[0][2]['body'], record.to_json())
 
     def test_get_record(self):
-        simplegeoid = 'abcdefghijklmnopqrstuvwxyz'
+        simplegeoid = 'abcdefghijklmnopqrstuvwyz'
         resultrecord = Record('a_layer', simplegeoid, D('11.03'), D('10.03'))
 
         mockhttp = mock.Mock()
@@ -89,7 +89,7 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(res.to_json(), resultrecord.to_json())
 
     def test_update_record(self):
-        simplegeoid = 'abcdefghijklmnopqrstuvwxyz'
+        simplegeoid = 'abcdefghijklmnopqrstuvwyz'
         rec = Record('a_layer', simplegeoid, D('11.03'), D('10.04'))
 
         mockhttp = mock.Mock()
@@ -98,6 +98,18 @@ class ClientTest(unittest.TestCase):
 
         res = self.client.update_record(rec)
         self.failUnlessEqual(res.to_json(), rec.to_json())
+
+    def test_search(self):
+        rec1 = Record('abcdefghijkmlnopqrstuvwyz1', D('11.03'), D('10.04'), type='place', name="Bob's House Of Monkeys", category="monkey dealership")
+        rec2 = Record('abcdefghijkmlnopqrstuvwyz2', D('11.03'), D('10.05'), type='place', name="Monkey Food 'R' Us", category="pet food store")
+
+        mockhttp = mock.Mock()
+        mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, json.dumps([rec1.to_dict(), rec2.to_dict()]))
+        self.client.http = mockhttp
+
+        res = self.client.search(self.record_lat, self.record_lon, query='monkeys', category='animal')
+        self.failUnlessEqual(len(res), 2)
+        self.failUnlessEqual(res[0], rec1.to_dict())
 
     def DISABLED_test_multi_record_post(self):
         feats = [self._record() for i in range(10)]
