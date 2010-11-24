@@ -66,6 +66,21 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(mockhttp.method_calls[0][1][1], 'PUT')
         self.assertEqual(mockhttp.method_calls[0][2]['body'], record.to_json())
 
+    def test_get_record(self):
+        simplegeoid = 'abcdefghijklmnopqrstuvwxyz'
+        resultrecord = Record('a_layer', simplegeoid, D('11.03'), D('10.03'))
+
+        mockhttp = mock.Mock()
+        mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, resultrecord.to_json())
+        self.client.http = mockhttp
+
+        res = self.client.get_record(simplegeoid)
+        self.assertEqual(mockhttp.method_calls[0][0], 'request')
+        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, simplegeoid))
+        self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
+        self.failUnless(isinstance(res, Record), res)
+        self.assertEqual(res.to_json(), resultrecord.to_json())
+
     def DISABLED_test_multi_record_post(self):
         feats = [self._record() for i in range(10)]
         featcoll = {
