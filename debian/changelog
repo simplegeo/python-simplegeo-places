@@ -1,3 +1,12 @@
+python-simplegeo-places (1.2.42) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add search(), remove notion of a 'layer', add TODO.rst
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 24 Nov 2010 21:21:30 +0000
+
 python-simplegeo-places (1.2.41) lucid; urgency=low
 
   [ Zooko Ofsimplegeo ]
