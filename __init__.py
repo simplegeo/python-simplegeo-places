@@ -18,6 +18,7 @@ class Client(object):
         'endpoints': 'endpoints.json',
         'places': 'places/%(simplegeoid)s.json',
         'place': 'places/place.json',
+        'search': 'places/%(lat)s,%(lon)s/search.json?query=%(query)s&category=%(category)s',
     }
 
     def __init__(self, key, secret, api_version=API_VERSION, host="api.simplegeo.com", port=80):
@@ -57,13 +58,17 @@ class Client(object):
         endpoint = self.endpoint('places', simplegeoid=record.id)
         return self._request(endpoint, 'POST')
 
-    def add_records(self, layer, records):
+    def add_records(self, records):
         features = {
             'type': 'FeatureCollection',
             'features': [record.to_dict() for record in records],
         }
-        endpoint = self.endpoint('records', layer=layer)
+        endpoint = self.endpoint('records')
         self._request(endpoint, "POST", json.dumps(features))
+
+    def search(self, lat, lon, query='', category=''):
+        endpoint = self.endpoint('search', lat=lat, lon=lon, query=query, category=category)
+        return self._request(endpoint, 'GET')
 
     def _request(self, endpoint, method, data=None):
         body = None
@@ -87,8 +92,8 @@ class Client(object):
         if content: # Empty body is allowed.
             try:
                 content = json.loads(content)
-            except ValueError, le:
-                raise DecodeError(resp, content)
+            except (ValueError, TypeError), le:
+                raise DecodeError(resp, content, le)
 
         if resp['status'][0] not in ('2', '3'):
             code = resp['status']
@@ -108,8 +113,7 @@ class Client(object):
         return content
 
 class Record:
-    def __init__(self, layer, id, lat, lon, type='object', created=None, **kwargs):
-        self.layer = layer
+    def __init__(self, id, lat, lon, type='object', created=None, **kwargs):
         self.id = id
         self.lon = lon
         self.lat = lat
@@ -124,11 +128,11 @@ class Record:
     def from_dict(cls, data):
         assert data
         coord = data['geometry']['coordinates']
-        record = cls(data['properties']['layer'], data['id'], lat=coord[1], lon=coord[0])
+        record = cls(data['id'], lat=coord[1], lon=coord[0])
         record.type = data['properties']['type']
         record.created = data.get('created', record.created)
         record.__dict__.update(dict((k, v) for k, v in data['properties'].iteritems()
-                                    if k not in ('layer', 'type', 'created')))
+                                    if k not in ('type', 'created')))
         return record
 
     def to_dict(self):
@@ -151,10 +155,11 @@ class Record:
 class APIError(Exception):
     """Base exception for all API errors."""
 
-    def __init__(self, code, msg, headers):
+    def __init__(self, code, msg, headers, description=''):
         self.code = code
         self.msg = msg
         self.headers = headers
+        self.description = description
 
     def __getitem__(self, key):
         if key == 'code':
@@ -169,15 +174,15 @@ class APIError(Exception):
         return self.__repr__()
 
     def __repr__(self):
-        return "%s (#%s)" % (self.msg, self.code)
+        return "%s (#%s) %s" % (self.msg, self.code, self.description)
 
 class DecodeError(APIError):
     """There was a problem decoding the API's JSON response."""
 
-    def __init__(self, headers, body):
-        super(DecodeError, self).__init__(None, "Could not decode JSON", headers)
+    def __init__(self, headers, body, le):
+        super(DecodeError, self).__init__(None, "Could not decode JSON", headers, repr(le))
         self.body = body
 
     def __repr__(self):
-        return "headers: %s, content: <%s>" % (self.headers, self.body)
+        return "headers: %s, content: <%s> %s" % (self.headers, self.body, self.description)
 
