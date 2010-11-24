@@ -16,10 +16,8 @@ class Client(object):
     realm = "http://api.simplegeo.com"
     endpoints = {
         'endpoints': 'endpoints.json',
+        'places': 'places/%(simplegeoid)s.json',
         'place': 'places/place.json',
-
-        'record': 'record/%(layer)s/%(id)s.json',
-        'records': 'records/%(layer)s.json',
     }
 
     def __init__(self, key, secret, api_version=API_VERSION, host="api.simplegeo.com", port=80):
@@ -50,6 +48,10 @@ class Client(object):
     def add_record(self, record):
         endpoint = self.endpoint('place')
         self._request(endpoint, "PUT", record.to_json())
+
+    def get_record(self, simplegeoid):
+        endpoint = self.endpoint('places', simplegeoid=simplegeoid)
+        return self._request(endpoint, 'GET')
 
     def add_records(self, layer, records):
         features = {
@@ -91,6 +93,13 @@ class Client(object):
                 code = content['code']
                 message = content['message']
             raise APIError(code, message, resp)
+
+        # If this is a record object, return the Python object instead of the dict.
+        try:
+            content = Record.from_dict(content)
+        except (TypeError, KeyError):
+            # Okay nevermind I guess it wasn't a Record.
+            pass
 
         return content
 
