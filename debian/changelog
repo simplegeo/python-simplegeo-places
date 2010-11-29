@@ -1,3 +1,12 @@
+python-simplegeo-places (1.2.44) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add delete_record() and test thereof
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Mon, 29 Nov 2010 16:58:26 +0000
+
 python-simplegeo-places (1.2.43) lucid; urgency=low
 
   * UNRELEASED
