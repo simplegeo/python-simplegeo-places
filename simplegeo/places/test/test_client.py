@@ -120,21 +120,3 @@ class ClientTest(unittest.TestCase):
         res = self.client.search(self.record_lat, self.record_lon, query='monkeys', category='animal')
         self.failUnlessEqual(len(res), 2)
         self.failUnlessEqual(res[0], rec1.to_dict())
-
-    def DISABLED_test_multi_record_post(self):
-        feats = [self._record() for i in range(10)]
-        featcoll = {
-            'type': 'FeatureCollection',
-            'features': [feat.to_dict() for feat in feats],
-            }
-
-        mockhttp = mock.Mock()
-        mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json'}, None)
-        self.client.http = mockhttp
-
-        self.client.add_records(TESTING_LAYER, feats)
-
-        self.assertEqual(mockhttp.method_calls[0][0], 'request')
-        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/place.json' % (API_VERSION,))
-        self.assertEqual(mockhttp.method_calls[0][1][1], 'POST')
-        self.assertEqual(mockhttp.method_calls[0][2]['body'], json.dumps(featcoll))
