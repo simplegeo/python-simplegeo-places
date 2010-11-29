@@ -31,22 +31,6 @@ ENDPOINT_DESCR=json.dumps({
 class ClientTest(unittest.TestCase):
     def setUp(self):
         self.client = Client(MY_OAUTH_KEY, MY_OAUTH_SECRET, API_VERSION, API_HOST, API_PORT)
-        self.created_records = []
-        self.record_id = 0
-        self.record_lat = D('37.8016')
-        self.record_lon = D('-122.4783')
-
-    def _record(self):
-        self.record_id += 1
-        self.record_lat = (self.record_lat + 10) % 90
-        self.record_lon = (self.record_lon + 10) % 180
-
-        return Record(
-            layer=TESTING_LAYER,
-            id=str(self.record_id),
-            lat=self.record_lat,
-            lon=self.record_lon
-        )
 
     def test_wrong_endpoint(self):
         self.assertRaises(Exception, self.client.endpoint, 'recordt')
@@ -60,12 +44,20 @@ class ClientTest(unittest.TestCase):
         self.client.http = mockhttp
         d = self.client.get_endpoint_descriptions()
         self.failUnless(isinstance(d, dict), d)
+
     def test_add_record(self):
         mockhttp = mock.Mock()
         newloc = 'http://api.simplegeo.com:80/%s/places/abcdefghijklmnopqrstuvwyz.json' % (API_VERSION,)
         mockhttp.request.return_value = ({'status': '301', 'content-type': 'application/json', 'location': newloc}, json.dumps("Yo dawg, go to the new location: '%s'" % (newloc,)))
         self.client.http = mockhttp
-        record = self._record()
+
+        record = Record(
+            layer=TESTING_LAYER,
+            id=str(1),
+            lat=D('37.8016'),
+            lon=D('-122.4783')
+        )
+
         self.client.add_record(record)
         self.assertEqual(mockhttp.method_calls[0][0], 'request')
         self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/place.json' % (API_VERSION,))
@@ -117,6 +109,6 @@ class ClientTest(unittest.TestCase):
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, json.dumps([rec1.to_dict(), rec2.to_dict()]))
         self.client.http = mockhttp
 
-        res = self.client.search(self.record_lat, self.record_lon, query='monkeys', category='animal')
+        res = self.client.search(D('11.03'), D('10.04'), query='monkeys', category='animal')
         self.failUnlessEqual(len(res), 2)
         self.failUnlessEqual(res[0], rec1.to_dict())
