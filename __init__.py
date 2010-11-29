@@ -58,13 +58,9 @@ class Client(object):
         endpoint = self.endpoint('places', simplegeoid=record.id)
         return self._request(endpoint, 'POST')
 
-    def add_records(self, records):
-        features = {
-            'type': 'FeatureCollection',
-            'features': [record.to_dict() for record in records],
-        }
-        endpoint = self.endpoint('records')
-        self._request(endpoint, "POST", json.dumps(features))
+    def delete_record(self, simplegeoid):
+        endpoint = self.endpoint('places', simplegeoid=simplegeoid)
+        return self._request(endpoint, 'DELETE')
 
     def search(self, lat, lon, query='', category=''):
         endpoint = self.endpoint('search', lat=lat, lon=lon, query=query, category=category)

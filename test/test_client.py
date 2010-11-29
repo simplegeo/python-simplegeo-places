@@ -60,7 +60,6 @@ class ClientTest(unittest.TestCase):
         self.client.http = mockhttp
         d = self.client.get_endpoint_descriptions()
         self.failUnless(isinstance(d, dict), d)
-
     def test_add_record(self):
         mockhttp = mock.Mock()
         newloc = 'http://api.simplegeo.com:80/%s/places/abcdefghijklmnopqrstuvwyz.json' % (API_VERSION,)
@@ -97,6 +96,17 @@ class ClientTest(unittest.TestCase):
         self.client.http = mockhttp
 
         res = self.client.update_record(rec)
+        self.failUnlessEqual(res.to_json(), rec.to_json())
+
+    def test_delete_record(self):
+        simplegeoid = 'abcdefghijklmnopqrstuvwyz'
+        rec = Record('a_layer', simplegeoid, D('11.03'), D('10.04'))
+
+        mockhttp = mock.Mock()
+        mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, rec.to_json())
+        self.client.http = mockhttp
+
+        res = self.client.delete_record(simplegeoid)
         self.failUnlessEqual(res.to_json(), rec.to_json())
 
     def test_search(self):
