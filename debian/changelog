@@ -1,3 +1,12 @@
+python-simplegeo-places (1.2.45) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * remove disabled test for unimplemented feature: bulk insert
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Mon, 29 Nov 2010 17:45:15 +0000
+
 python-simplegeo-places (1.2.44) lucid; urgency=low
 
   [ Zooko Ofsimplegeo ]
