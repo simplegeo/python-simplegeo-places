@@ -81,14 +81,19 @@ class ClientTest(unittest.TestCase):
 
     def test_update_record(self):
         simplegeoid = 'abcdefghijklmnopqrstuvwyz'
-        rec = Record('a_layer', simplegeoid, D('11.03'), D('10.04'))
+        rec = Record(simplegeoid, D('11.03'), D('10.04'))
+        mergedrec = Record(simplegeoid, D('11.03'), D('10.04'))
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, rec.to_json())
         self.client.http = mockhttp
 
         res = self.client.update_record(rec)
+        self.failUnless(isinstance(res, Record), res)
         self.failUnlessEqual(res.to_json(), rec.to_json())
+        self.assertEqual(mockhttp.method_calls[0][0], 'request')
+        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, simplegeoid))
+        self.assertEqual(mockhttp.method_calls[0][1][1], 'POST')
 
     def test_delete_record(self):
         simplegeoid = 'abcdefghijklmnopqrstuvwyz'
@@ -100,6 +105,9 @@ class ClientTest(unittest.TestCase):
 
         res = self.client.delete_record(simplegeoid)
         self.failUnlessEqual(res.to_json(), rec.to_json())
+        self.assertEqual(mockhttp.method_calls[0][0], 'request')
+        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, simplegeoid))
+        self.assertEqual(mockhttp.method_calls[0][1][1], 'DELETE')
 
     def test_search(self):
         rec1 = Record('abcdefghijkmlnopqrstuvwyz1', D('11.03'), D('10.04'), type='place', name="Bob's House Of Monkeys", category="monkey dealership")
