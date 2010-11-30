@@ -12,13 +12,19 @@ from jsonutil import jsonutil as json
 # {"GET /1.0/places/<place_id:[a-zA-Z0-9\\.,_-]+>.json": "Return a record for a place.", "GET /1.0/endpoints.json": "Describe known endpoints.", "POST /1.0/places/<place_id:.*>.json": "Update a record.", "GET /1.0/places/<lat:-?[0-9\\.]+>,<lon:-?[0-9\\.]+>/search.json": "Search for places near a lat/lon.", "PUT /1.0/places/place.json": "Create a new record, returns a 301 to the location of the resource.", "GET /1.0/debug/<number:\\d+>": "Undocumented.", "DELETE /1.0/places/<place_id:.*>.json": "Delete a record."}
 
 
+def json_decode(jsonstr):
+    try: 
+        return json.loads(jsonstr)
+    except (ValueError, TypeError), le:
+        raise DecodeError(jsonstr, le)
+
 class Client(object):
     realm = "http://api.simplegeo.com"
     endpoints = {
         'endpoints': 'endpoints.json',
         'places': 'places/%(simplegeoid)s.json',
         'place': 'places/place.json',
-        'search': 'places/%(lat)s,%(lon)s/search.json?query=%(query)s&category=%(category)s',
+        'search': 'places/%(lat)s,%(lon)s/search.json?q=%(query)s&category=%(category)s',
     }
 
     def __init__(self, key, secret, api_version=API_VERSION, host="api.simplegeo.com", port=80):
@@ -33,7 +39,8 @@ class Client(object):
         self.http = Http()
 
     def get_endpoint_descriptions(self):
-        return self._request(self.endpoint('endpoints'), 'GET')
+        result = self._request(self.endpoint('endpoints'), 'GET')
+        return json.loads(result)
 
     def endpoint(self, name, **kwargs):
         try:
@@ -52,11 +59,12 @@ class Client(object):
 
     def get_record(self, simplegeoid):
         endpoint = self.endpoint('places', simplegeoid=simplegeoid)
-        return self._request(endpoint, 'GET')
+        result = self._request(endpoint, 'GET')
+        return Record.from_json(result)
 
     def update_record(self, record):
         endpoint = self.endpoint('places', simplegeoid=record.id)
-        return self._request(endpoint, 'POST')
+        return self._request(endpoint, 'POST', record.to_json())
 
     def delete_record(self, simplegeoid):
         endpoint = self.endpoint('places', simplegeoid=simplegeoid)
@@ -64,18 +72,16 @@ class Client(object):
 
     def search(self, lat, lon, query='', category=''):
         endpoint = self.endpoint('search', lat=lat, lon=lon, query=query, category=category)
-        return self._request(endpoint, 'GET')
+        result = self._request(endpoint, 'GET')
+        
+        fc = json_decode(result)
+        return set(Record.from_dict(f) for f in fc['features'])
 
     def _request(self, endpoint, method, data=None):
-        body = None
+        if data is not None and not isinstance(data, basestring):
+             raise TypeError("data is required to be None or a string or unicode, not %s" % (type(data),))
         params = {}
-        if method == "GET" and isinstance(data, dict):
-            endpoint = endpoint + '?' + urllib.urlencode(data)
-        else:
-            if isinstance(data, dict):
-                body = urllib.urlencode(data)
-            else:
-                body = data
+        body = data
         request = oauth.Request.from_consumer_and_token(self.consumer,
             http_method=method, http_url=endpoint, parameters=params)
 
@@ -85,26 +91,8 @@ class Client(object):
 
         resp, content = self.http.request(endpoint, method, body=body, headers=headers)
 
-        if content: # Empty body is allowed.
-            try:
-                content = json.loads(content)
-            except (ValueError, TypeError), le:
-                raise DecodeError(resp, content, le)
-
         if resp['status'][0] not in ('2', '3'):
-            code = resp['status']
-            message = content
-            if isinstance(content, dict):
-                code = content['code']
-                message = content['message']
-            raise APIError(code, message, resp)
-
-        # If this is a record object, return the Python object instead of the dict.
-        try:
-            content = Record.from_dict(content)
-        except (TypeError, KeyError):
-            # Okay nevermind I guess it wasn't a Record.
-            pass
+            raise APIError(int(resp['status']), content, resp)
 
         return content
 
@@ -144,6 +132,10 @@ class Record:
                                         if k not in ('lon', 'lat', 'id', 'created')),
         }
 
+    @classmethod
+    def from_json(cls, jsonstr):
+        return cls.from_dict(json_decode(jsonstr))
+
     def to_json(self):
         return json.dumps(self.to_dict())
 
@@ -157,15 +149,6 @@ class APIError(Exception):
         self.headers = headers
         self.description = description
 
-    def __getitem__(self, key):
-        if key == 'code':
-            return self.code
-
-        try:
-            return self.headers[key]
-        except KeyError:
-            raise AttributeError(key)
-
     def __str__(self):
         return self.__repr__()
 
@@ -175,10 +158,10 @@ class APIError(Exception):
 class DecodeError(APIError):
     """There was a problem decoding the API's JSON response."""
 
-    def __init__(self, headers, body, le):
-        super(DecodeError, self).__init__(None, "Could not decode JSON", headers, repr(le))
+    def __init__(self, body, le):
+        super(DecodeError, self).__init__(None, "Could not decode JSON", None, repr(le))
         self.body = body
 
     def __repr__(self):
-        return "headers: %s, content: <%s> %s" % (self.headers, self.body, self.description)
+        return "%s content: %s" % (self.description, self.body)
 
