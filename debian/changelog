@@ -1,3 +1,14 @@
+python-simplegeo-places (1.2.47) lucid; urgency=low
+
+  [ ansate ]
+  * docstrings for API methods
+  * removed the docstring line from the TODO
+  * added request type checking
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 30 Nov 2010 16:52:45 +0000
+
 python-simplegeo-places (1.2.46) lucid; urgency=low
 
   [ Zooko Ofsimplegeo ]
