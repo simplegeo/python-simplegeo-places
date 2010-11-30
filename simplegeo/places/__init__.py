@@ -15,6 +15,12 @@ def json_decode(jsonstr):
     except (ValueError, TypeError), le:
         raise DecodeError(jsonstr, le)
 
+def json_decode(jsonstr):
+    try: 
+        return json.loads(jsonstr)
+    except (ValueError, TypeError), le:
+        raise DecodeError(jsonstr, le)
+
 class Client(object):
     realm = "http://api.simplegeo.com"
     endpoints = {
@@ -37,8 +43,7 @@ class Client(object):
 
     def get_endpoint_descriptions(self):
         """Describe known endpoints."""
-        endpoint = self.endpoint('endpoints')
-        return json_decode(self._request(endpoint, "GET"))
+        return json_decode(self._request(self.endpoint('endpoints'), 'GET')[1])
 
     def endpoint(self, name, **kwargs):
         """Not used directly. Finds and formats the endpoints as needed for any type of request."""
@@ -60,30 +65,34 @@ class Client(object):
     def get_record(self, simplegeoid):
         """Return a record for a place."""
         endpoint = self.endpoint('places', simplegeoid=simplegeoid)
-        result = self._request(endpoint, 'GET')
+        result = self._request(endpoint, 'GET')[1]
         return Record.from_json(result)
 
     def update_record(self, record):
         """Update a record."""
         endpoint = self.endpoint('places', simplegeoid=record.id)
-        return self._request(endpoint, 'POST', record.to_json())
+        return self._request(endpoint, 'POST', record.to_json())[1]
 
     def delete_record(self, simplegeoid):
         """Delete a record."""
         endpoint = self.endpoint('places', simplegeoid=simplegeoid)
-        return self._request(endpoint, 'DELETE')
+        return self._request(endpoint, 'DELETE')[1]
 
     def search(self, lat, lon, query='', category=''):
         """Search for places near a lat/lon."""
         endpoint = self.endpoint('search', lat=lat, lon=lon, query=query, category=category)
-        result = self._request(endpoint, 'GET')
+        result = self._request(endpoint, 'GET')[1]
 
         fc = json_decode(result)
         return set(Record.from_dict(f) for f in fc['features'])
 
     def _request(self, endpoint, method, data=None):
-        """Not used directly. Performs the actual request against the API, including passing the credentials with oauth.
-        Returns a dict or record object as appropriate."""
+        """
+        Not used directly by code external to this lib. Performs the
+        actual request against the API, including passing the
+        credentials with oauth.  Returns a tuple of resp (headers),
+        body as a string.
+        """
         if data is not None and not isinstance(data, basestring):
              raise TypeError("data is required to be None or a string or unicode, not %s" % (type(data),))
         params = {}
@@ -100,7 +109,7 @@ class Client(object):
         if resp['status'][0] not in ('2', '3'):
             raise APIError(int(resp['status']), content, resp)
 
-        return content
+        return resp, content
 
 class Record:
     def __init__(self, id, lat, lon, type='object', created=None, **kwargs):
