@@ -36,10 +36,10 @@ class Client(object):
         self.http = Http()
 
     def get_endpoint_descriptions(self):
-        result = self._request(self.endpoint('endpoints'), 'GET')
-        return json.loads(result)
+        """Describe known endpoints."""
 
     def endpoint(self, name, **kwargs):
+        """Not used directly. Finds and formats the endpoints as needed for any type of request."""
         try:
             endpoint = self.endpoints[name]
         except KeyError:
@@ -51,30 +51,37 @@ class Client(object):
         return urljoin(urljoin(self.uri, self.api_version + '/'), endpoint)
 
     def add_record(self, record):
+        """Create a new record, returns a 301 to the location of the resource."""
         endpoint = self.endpoint('place')
         self._request(endpoint, "PUT", record.to_json())
 
     def get_record(self, simplegeoid):
+        """Return a record for a place."""
         endpoint = self.endpoint('places', simplegeoid=simplegeoid)
         result = self._request(endpoint, 'GET')
         return Record.from_json(result)
 
     def update_record(self, record):
+        """Update a record."""
         endpoint = self.endpoint('places', simplegeoid=record.id)
         return self._request(endpoint, 'POST', record.to_json())
 
     def delete_record(self, simplegeoid):
+        """Delete a record."""
         endpoint = self.endpoint('places', simplegeoid=simplegeoid)
         return self._request(endpoint, 'DELETE')
 
     def search(self, lat, lon, query='', category=''):
+        """Search for places near a lat/lon."""
         endpoint = self.endpoint('search', lat=lat, lon=lon, query=query, category=category)
         result = self._request(endpoint, 'GET')
-        
+
         fc = json_decode(result)
         return set(Record.from_dict(f) for f in fc['features'])
 
     def _request(self, endpoint, method, data=None):
+        """Not used directly. Performs the actual request against the API, including passing the credentials with oauth. 
+        Returns a dict or record object as appropriate."""
         if data is not None and not isinstance(data, basestring):
              raise TypeError("data is required to be None or a string or unicode, not %s" % (type(data),))
         params = {}
