@@ -1,3 +1,105 @@
+python-simplegeo-places (1.2.47) lucid; urgency=low
+
+  [ ansate ]
+  * docstrings for API methods
+  * removed the docstring line from the TODO
+  * added request type checking
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 30 Nov 2010 16:52:45 +0000
+
+python-simplegeo-places (1.2.46) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * remove useless code from test
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Mon, 29 Nov 2010 19:24:46 +0000
+
+python-simplegeo-places (1.2.45) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * remove disabled test for unimplemented feature: bulk insert
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Mon, 29 Nov 2010 17:45:15 +0000
+
+python-simplegeo-places (1.2.44) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add delete_record() and test thereof
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Mon, 29 Nov 2010 16:58:26 +0000
+
+python-simplegeo-places (1.2.43) lucid; urgency=low
+
+  * UNRELEASED
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 24 Nov 2010 22:12:19 +0000
+
+python-simplegeo-places (1.2.42) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add search(), remove notion of a 'layer', add TODO.rst
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 24 Nov 2010 21:21:30 +0000
+
+python-simplegeo-places (1.2.41) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add update_record()
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 24 Nov 2010 20:57:30 +0000
+
+python-simplegeo-places (1.2.40) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add get_record, including tests. Change it to return a Python Record
+    instance instead of a dict
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 24 Nov 2010 17:49:29 +0000
+
+python-simplegeo-places (1.2.39) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * update the record-creation code to match Ian's HTTP API
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 24 Nov 2010 17:30:09 +0000
+
+python-simplegeo-places (1.2.38) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add test that it preserves the precise lat/lon that you entered
+    (which is why we care about using Decimal instead of float when it
+    makes sense to do so)
+  * try to hook up test/coverage so that it will get invoked inside
+    debian pbuild world and the results thereof will get spurted back
+    out into hudson world
+  * add python-coverage as a build-dep in debian/control
+  * debian renamed "coverage" to "python-coverage"
+  * add dep on python-simplejson >= 2.1.0
+  * fix up unit tests to test a plausible API (probably not the real API
+    though)
+  * fix python setup.py --version
+  * version bump
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 23 Nov 2010 00:09:15 +0000
+
 python-simplegeo-places (0.9.1) unstable; urgency=low
 
   * first working version
