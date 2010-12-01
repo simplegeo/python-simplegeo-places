@@ -1,3 +1,18 @@
+python-simplegeo-places (1.2.52) lucid; urgency=low
+
+  [ ansate ]
+  * lots more tests, which moved around some things in init noteably:
+    request no longer tries to turn things into records because most
+    endpts do not give back records
+
+  [ Zooko Ofsimplegeo ]
+  * remove obsolete comment (and trigger a new build)
+  * fix missing code for endpoints endpoint
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 01 Dec 2010 18:36:43 +0000
+
 python-simplegeo-places (1.2.47) lucid; urgency=low
 
   [ ansate ]
