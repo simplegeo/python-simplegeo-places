@@ -45,7 +45,12 @@ class ClientTest(unittest.TestCase):
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json'}, ENDPOINT_DESCR)
         self.client.http = mockhttp
         d = self.client.get_endpoint_descriptions()
-        self.failUnless(isinstance(d, dict), d)
+
+        self.assertEqual(mockhttp.method_calls[0][0], 'request')
+        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/endpoints.json' % (API_VERSION,))
+        self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
+
+        self.failUnless(isinstance(d, dict), (repr(d), type(d)))
 
     def test_add_record(self):
         mockhttp = mock.Mock()
