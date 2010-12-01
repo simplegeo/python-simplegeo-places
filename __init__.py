@@ -43,7 +43,8 @@ class Client(object):
 
     def get_endpoint_descriptions(self):
         """Describe known endpoints."""
-        return json_decode(self._request(self.endpoint('endpoints'), 'GET')[1])
+        endpoint = self.endpoint('endpoints')
+        return json_decode(self._request(endpoint, "GET")[1])
 
     def endpoint(self, name, **kwargs):
         """Not used directly. Finds and formats the endpoints as needed for any type of request."""
