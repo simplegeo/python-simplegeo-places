@@ -91,8 +91,8 @@ class Client(object):
         """
         Not used directly by code external to this lib. Performs the
         actual request against the API, including passing the
-        credentials with oauth.  Returns a tuple of resp (headers),
-        body as a string.
+        credentials with oauth.  Returns a tuple of (headers as dict,
+        body as string).
         """
         if data is not None and not isinstance(data, basestring):
              raise TypeError("data is required to be None or a string or unicode, not %s" % (type(data),))
