@@ -10,7 +10,7 @@ import time
 from jsonutil import jsonutil as json
 
 def json_decode(jsonstr):
-    try: 
+    try:
         return json.loads(jsonstr)
     except (ValueError, TypeError), le:
         raise DecodeError(jsonstr, le)
@@ -20,8 +20,8 @@ class Client(object):
     endpoints = {
         'endpoints': 'endpoints.json',
         'places': 'places/%(simplegeoid)s.json',
-        'place': 'places/place.json',
-        'search': 'places/%(lat)s,%(lon)s/search.json?q=%(query)s&category=%(category)s',
+        'create': 'places',
+        'search': 'places/%(lat)s,%(lon)s?q=%(query)s&category=%(category)s',
     }
 
     def __init__(self, key, secret, api_version=API_VERSION, host="api.simplegeo.com", port=80):
@@ -54,8 +54,8 @@ class Client(object):
 
     def add_record(self, record):
         """Create a new record, returns a 301 to the location of the resource."""
-        endpoint = self.endpoint('place')
-        self._request(endpoint, "PUT", record.to_json())
+        endpoint = self.endpoint('create')
+        self._request(endpoint, "POST", record.to_json())
 
     def get_record(self, simplegeoid):
         """Return a record for a place."""
@@ -82,7 +82,7 @@ class Client(object):
         return set(Record.from_dict(f) for f in fc['features'])
 
     def _request(self, endpoint, method, data=None):
-        """Not used directly. Performs the actual request against the API, including passing the credentials with oauth. 
+        """Not used directly. Performs the actual request against the API, including passing the credentials with oauth.
         Returns a dict or record object as appropriate."""
         if data is not None and not isinstance(data, basestring):
              raise TypeError("data is required to be None or a string or unicode, not %s" % (type(data),))
