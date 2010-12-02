@@ -20,13 +20,13 @@ API_HOST = 'api.simplegeo.com'
 API_PORT = 80
 
 ENDPOINT_DESCR=json.dumps({
-        "GET /1.0/places/<place_id:[a-zA-Z0-9\\.,_-]+>.json": "Return a record for a place.",
+        "GET /1.0/places/<handle:[a-zA-Z0-9\\.,_-]+>.json": "Return a record for a place.",
         "GET /1.0/endpoints.json": "Describe known endpoints.",
-        "POST /1.0/places/<place_id:.*>.json": "Update a record.",
-        "GET /1.0/places/<lat:-?[0-9\\.]+>,<lon:-?[0-9\\.]+>/search.json": "Search for places near a lat/lon. Query string includes ?q=term and ?q=term&category=cat",
-        "PUT /1.0/places/place.json": "Create a new record, returns a 301 to the location of the resource.",
+        "POST /1.0/places/<handle:.*>.json": "Update a record.",
+        "GET /1.0/places/<lat:-?[0-9\\.]+>,<lon:-?[0-9\\.]+>": "Search for places near a lat/lon. Query string includes ?q=term and ?q=term&category=cat",
+        "POST /1.0/places": "Create a new record, returns a 301 to the location of the resource.",
         "GET /1.0/debug/<number:\\d+>": "Undocumented.",
-        "DELETE /1.0/places/<place_id:.*>.json": "Delete a record."})
+        "DELETE /1.0/places/<handle:.*>.json": "Delete a record."})
 
 
 
@@ -59,7 +59,6 @@ class ClientTest(unittest.TestCase):
         self.client.http = mockhttp
 
         record = Record(
-            layer=TESTING_LAYER,
             id=str(1),
             lat=D('37.8016'),
             lon=D('-122.4783')
@@ -67,21 +66,21 @@ class ClientTest(unittest.TestCase):
 
         self.client.add_record(record)
         self.assertEqual(mockhttp.method_calls[0][0], 'request')
-        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/place.json' % (API_VERSION,))
-        self.assertEqual(mockhttp.method_calls[0][1][1], 'PUT')
+        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places' % (API_VERSION,))
+        self.assertEqual(mockhttp.method_calls[0][1][1], 'POST')
         self.assertEqual(mockhttp.method_calls[0][2]['body'], record.to_json())
 
     def test_get_record(self):
-        simplegeoid = 'abcdefghijklmnopqrstuvwyz'
-        resultrecord = Record('a_layer', simplegeoid, D('11.03'), D('10.03'))
+        handle = 'SG_abcdefghijklmnopqrstuvwyz'
+        resultrecord = Record(handle, D('11.03'), D('10.03'))
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, resultrecord.to_json())
         self.client.http = mockhttp
 
-        res = self.client.get_record(simplegeoid)
+        res = self.client.get_record(handle)
         self.assertEqual(mockhttp.method_calls[0][0], 'request')
-        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, simplegeoid))
+        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, handle))
         self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
         self.failUnless(isinstance(res, Record), res)
         self.assertEqual(res.to_json(), resultrecord.to_json())
@@ -124,8 +123,8 @@ class ClientTest(unittest.TestCase):
         self.failUnlessEqual(res, EXAMPLE_RECORD_JSONSTR)
 
     def test_update_record(self):
-        simplegeoid = 'abcdefghijklmnopqrstuvwyz'
-        rec = Record(simplegeoid, D('11.03'), D('10.04'))
+        handle = 'SG_abcdefghijklmnopqrstuvwyz'
+        rec = Record(handle, D('11.03'), D('10.04'))
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, {'token': "this is your polling token"})
@@ -136,7 +135,7 @@ class ClientTest(unittest.TestCase):
         self.failUnless(res.has_key('token'), res)
 
         self.assertEqual(mockhttp.method_calls[0][0], 'request')
-        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, simplegeoid))
+        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, handle))
         self.assertEqual(mockhttp.method_calls[0][1][1], 'POST')
         bodyjson = mockhttp.method_calls[0][2]['body']
         self.failUnless(isinstance(bodyjson, basestring), (repr(bodyjson), type(bodyjson)))
@@ -147,17 +146,17 @@ class ClientTest(unittest.TestCase):
         self.failUnlessEqual(bodyobj.get('geometry')['type'], 'Point')
 
     def test_delete_record(self):
-        simplegeoid = 'abcdefghijklmnopqrstuvwyz'
+        handle = 'SG_abcdefghijklmnopqrstuvwyz'
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, "whatever the response body is")
         self.client.http = mockhttp
 
-        res = self.client.delete_record(simplegeoid)
+        res = self.client.delete_record(handle)
         self.failUnlessEqual(res, "whatever the response body is")
 
         self.assertEqual(mockhttp.method_calls[0][0], 'request')
-        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, simplegeoid))
+        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, handle))
         self.assertEqual(mockhttp.method_calls[0][1][1], 'DELETE')
 
     def test_search(self):
@@ -175,7 +174,7 @@ class ClientTest(unittest.TestCase):
         self.failUnlessEqual(len(res), 2)
         self.failUnless(all(isinstance(f, Record) for f in res))
         self.assertEqual(mockhttp.method_calls[0][0], 'request')
-        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s,%s/search.json?q=monkeys&category=animal' % (API_VERSION, lat, lon))
+        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s,%s?q=monkeys&category=animal' % (API_VERSION, lat, lon))
         self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
 
     def test_lat_lon_search(self):
@@ -193,25 +192,25 @@ class ClientTest(unittest.TestCase):
         self.failUnlessEqual(len(res), 2)
         self.failUnless(all(isinstance(f, Record) for f in res))
         self.assertEqual(mockhttp.method_calls[0][0], 'request')
-        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s,%s/search.json?q=&category=' % (API_VERSION, lat, lon))
+        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s,%s?q=&category=' % (API_VERSION, lat, lon))
         self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
 
     def test_get_record_bad_json(self):
-        simplegeoid = 'abcdefghijklmnopqrstuvwyz'
+        handle = 'SG_abcdefghijklmnopqrstuvwyz'
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, 'some crap')
         self.client.http = mockhttp
 
         try:
-            res = self.client.get_record(simplegeoid)
+            res = self.client.get_record(handle)
         except DecodeError, e:
             self.failUnlessEqual(e.code,None,repr(e.code))
             self.failUnlessEqual(e.msg,"Could not decode JSON",repr(e.msg))
             decode_e = repr(e)
 
         self.assertEqual(mockhttp.method_calls[0][0], 'request')
-        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, simplegeoid))
+        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, handle))
         self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
 
 
@@ -223,7 +222,7 @@ class ClientTest(unittest.TestCase):
         string = str(e) 
 
     def test_get_places_error(self):
-        simplegeoid = 'abcdefghijklmnopqrstuvwyz'
+        handle = 'SG_abcdefghijklmnopqrstuvwyz'
 
         mockhttp = mock.Mock()
         # mockhttp.request.return_value = ({'status': '500', 'content-type': 'application/json', }, None)
@@ -231,12 +230,12 @@ class ClientTest(unittest.TestCase):
         self.client.http = mockhttp
 
         try:
-            res = self.client.get_record(simplegeoid)
+            res = self.client.get_record(handle)
         except APIError, e:
             self.failUnlessEqual(e.code, 500, repr(e.code))
             self.failUnlessEqual(e.msg, '{"message": "help my web server is confuzzled"}', (type(e.msg), repr(e.msg)))
 
         self.assertEqual(mockhttp.method_calls[0][0], 'request')
-        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, simplegeoid))
+        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, handle))
         self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
 
