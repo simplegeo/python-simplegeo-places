@@ -52,23 +52,94 @@ class ClientTest(unittest.TestCase):
 
         self.failUnless(isinstance(d, dict), (repr(d), type(d)))
 
-    def test_add_record(self):
+    def test_add_record_norecordid(self):
         mockhttp = mock.Mock()
-        newloc = 'http://api.simplegeo.com:80/%s/places/abcdefghijklmnopqrstuvwyz.json' % (API_VERSION,)
-        mockhttp.request.return_value = ({'status': '301', 'content-type': 'application/json', 'location': newloc}, json.dumps("Yo dawg, go to the new location: '%s'" % (newloc,)))
+        handle = 'SG_abcdefghijklmnopqrstuvwyz'
+        newloc = 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, handle)
+        resultrecord = Record(D('11.03'), D('10.03'), simplegeohandle=handle)
+        methods_called = []
+        def mockrequest2(*args, **kwargs):
+            methods_called.append(('request', args, kwargs))
+            return ({'status': '200', 'content-type': 'application/json', }, resultrecord.to_json())
+
+        def mockrequest(*args, **kwargs):
+            self.assertEqual(args[0], 'http://api.simplegeo.com:80/%s/places' % (API_VERSION,))
+            self.assertEqual(args[1], 'POST')
+
+            bodyobj = json.loads(kwargs['body'])
+            self.failUnlessEqual(bodyobj['id'], None)
+            methods_called.append(('request', args, kwargs))
+            mockhttp.request = mockrequest2
+            return ({'status': '301', 'content-type': 'application/json', 'location': newloc}, json.dumps("Yo dawg, go to the new location: '%s'" % (newloc,)))
+
+        mockhttp.request = mockrequest
         self.client.http = mockhttp
 
         record = Record(
-            id=str(1),
             lat=D('37.8016'),
             lon=D('-122.4783')
         )
 
-        self.client.add_record(record)
-        self.assertEqual(mockhttp.method_calls[0][0], 'request')
-        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places' % (API_VERSION,))
-        self.assertEqual(mockhttp.method_calls[0][1][1], 'POST')
-        self.assertEqual(mockhttp.method_calls[0][2]['body'], record.to_json())
+        res = self.client.add_record(record)
+        self.failUnless(isinstance(res, Record), (type(res), repr(res)))
+        self.failUnlessEqual(res.simplegeohandle, handle)
+
+    def test_add_record_simplegeohandle(self):
+        handle = 'SG_abcdefghijklmnopqrstuvwyz'
+        record = Record(
+            simplegeohandle=handle,
+            lat=D('37.8016'),
+            lon=D('-122.4783')
+        )
+
+        # You can't add-record on a record that already has a simplegeo handle. Don't do that.
+        self.failUnlessRaises(ValueError, self.client.add_record, record)
+
+    def test_add_record_simplegeohandle_and_recordid(self):
+        handle = 'SG_abcdefghijklmnopqrstuvwyz'
+        recordid = 'this is my record #1. my first record. and it is mine'
+        record = Record(
+            simplegeohandle=handle,
+            recordid=recordid,
+            lat=D('37.8016'),
+            lon=D('-122.4783')
+        )
+
+        # You can't add-record on a record that already has a simplegeo handle. Don't do that.
+        self.failUnlessRaises(ValueError, self.client.add_record, record)
+
+    def test_add_record_recordid(self):
+        mockhttp = mock.Mock()
+        handle = 'SG_abcdefghijklmnopqrstuvwyz'
+        recordid = 'this is my record #1. my first record. and it is mine'
+        newloc = 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, handle)
+        resultrecord = Record(D('11.03'), D('10.03'), simplegeohandle=handle)
+        methods_called = []
+        def mockrequest2(*args, **kwargs):
+            methods_called.append(('request', args, kwargs))
+            return ({'status': '200', 'content-type': 'application/json', }, resultrecord.to_json())
+
+        def mockrequest(*args, **kwargs):
+            self.failUnlessEqual(args[0], 'http://api.simplegeo.com:80/%s/places' % (API_VERSION,))
+            self.failUnlessEqual(args[1], 'POST')
+            bodyobj = json.loads(kwargs['body'])
+            self.failUnlessEqual(bodyobj['id'], recordid)
+            methods_called.append(('request', args, kwargs))
+            mockhttp.request = mockrequest2
+            return ({'status': '301', 'content-type': 'application/json', 'location': newloc}, json.dumps("Yo dawg, go to the new location: '%s'" % (newloc,)))
+
+        mockhttp.request = mockrequest
+        self.client.http = mockhttp
+
+        record = Record(
+            recordid=recordid,
+            lat=D('37.8016'),
+            lon=D('-122.4783')
+        )
+
+        res = self.client.add_record(record)
+        self.failUnless(isinstance(res, Record), (type(res), repr(res)))
+        self.failUnlessEqual(res.simplegeohandle, handle)
 
     def test_get_record(self):
         handle = 'SG_abcdefghijklmnopqrstuvwyz'

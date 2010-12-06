@@ -161,8 +161,6 @@ class RecordTest(unittest.TestCase):
         self.assertEquals(record.type, 'object')
         self.assertEquals(record.created, 98)
 
-        self.assertEquals('{"simplegeohandle": null, "created": 98, "recordid": "my_id", "geometry": {"type": "Point", "coordinates": [10.03, 11.0]}, "type": "Feature", "properties": {"type": "object", "key": "value"}}', record.to_json())
-
         record_dict = { 'created' : 97,
                      'geometry' : {
                                    'type' : 'Point',
@@ -184,4 +182,19 @@ class RecordTest(unittest.TestCase):
         self.assertEquals(record.type, 'object')
         self.assertEquals(record.created, 97)
 
-        self.assertEquals('{"simplegeohandle": null, "created": 97, "recordid": "my_id", "geometry": {"type": "Point", "coordinates": [10.0, 11.0]}, "type": "Feature", "properties": {"type": "object", "key": "value"}}', record.to_json())
+    def test_record_to_dict_sets_id_correctly(self):
+        handle = 'SG_abcdefghijklmnopqrstuvwyz'
+        recordid = 'this is my record #1. my first record. and it is mine'
+        rec = Record(D('11.03'), D('10.03'), simplegeohandle=handle, recordid=recordid)
+        self.failUnlessRaises(ValueError, rec.to_dict, for_add_record=True)
+
+        rec = Record(D('11.03'), D('10.03'), simplegeohandle=handle, recordid=None)
+        self.failUnlessRaises(ValueError, rec.to_dict, for_add_record=True)
+
+        rec = Record(D('11.03'), D('10.03'), simplegeohandle=handle, recordid=None)
+        dic = rec.to_dict(for_add_record=False)
+        self.failUnlessEqual(dic.get('id'), handle)
+
+        rec = Record(D('11.03'), D('10.03'), simplegeohandle=None, recordid=None)
+        dic = rec.to_dict(for_add_record=False)
+        self.failUnlessEqual(dic.get('id'), None)

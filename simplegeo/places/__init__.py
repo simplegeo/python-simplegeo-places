@@ -6,6 +6,7 @@ from httplib2 import Http
 import oauth2 as oauth
 from urlparse import urljoin
 import time
+import re
 
 from jsonutil import jsonutil as json
 
@@ -15,11 +16,13 @@ def json_decode(jsonstr):
     except (ValueError, TypeError), le:
         raise DecodeError(jsonstr, le)
 
-def json_decode(jsonstr):
-    try: 
-        return json.loads(jsonstr)
-    except (ValueError, TypeError), le:
-        raise DecodeError(jsonstr, le)
+R=re.compile("http://(.*)/places/([A-Za-z_,-]*).json$")
+
+def get_simplegeohandle_from_url(u):
+    mo = R.match(u)
+    if not mo:
+        raise Exception("This is not a SimpleGeo Places URL: %s" % (u,))
+    return mo.group(2)
 
 class Client(object):
     realm = "http://api.simplegeo.com"
@@ -61,13 +64,18 @@ class Client(object):
     def add_record(self, record):
         """Create a new record, returns a 301 to the location of the resource."""
         endpoint = self.endpoint('create')
-        self._request(endpoint, "POST", record.to_json())
+        jsonrec = record.to_json(for_add_record=True)
+        resp, content = self._request(endpoint, "POST", jsonrec)
+        if resp['status'] != "301":
+            raise APIError()
+        newloc = resp['location']
+        handle = get_simplegeohandle_from_url(newloc)
+        return self.get_record(handle)
 
     def get_record(self, simplegeohandle):
         """Return a record for a place."""
         endpoint = self.endpoint('places', simplegeohandle=simplegeohandle)
-        result = self._request(endpoint, 'GET')[1]
-        return Record.from_json(result)
+        return Record.from_json(self._request(endpoint, 'GET')[1])
 
     def update_record(self, record):
         """Update a record."""
@@ -145,7 +153,7 @@ class Record:
 
     @classmethod
     def from_dict(cls, data):
-        assert data
+        assert isinstance(data, dict), (type(data), repr(data))
         coord = data['geometry']['coordinates']
         record = cls(simplegeohandle=data.get('simplegeohandle'), recordid=data.get('recordid'), lat=coord[1], lon=coord[0])
         record.type = data['properties']['type']
@@ -154,12 +162,28 @@ class Record:
                                     if k not in ('type', 'created')))
         return record
 
-    def to_dict(self):
+    def to_dict(self, for_add_record=False):
+        """
+        Set for_add_record to True if the result is going to be sent
+        to the Places service as part of an add-record operation. When
+        adding records (and only when adding records) the 'id'
+        attribute is set to the recordid (which is optional and may be
+        None), so that the Places service can use the recordid (if
+        present) for generating the simplegeohandle. In other cases
+        the 'id' attribute will be the simplegeohandle, or will be
+        None if the simplegeohandle is not known.
+
+        It is an error to call to_dict(for_add_record=True) when you
+        already have a simplegeohandle for this record.
+        """
+        if for_add_record and self.simplegeohandle:
+            raise ValueError('A record cannot be added to the Places database when it already has a simplegeohandle: %s' % (self.simplegeohandle,))
         return {
             'type': 'Feature',
             'simplegeohandle': self.simplegeohandle,
             'recordid': self.recordid,
             'created': self.created,
+            'id': for_add_record and self.recordid or self.simplegeohandle,
             'geometry': {
                 'type': 'Point',
                 'coordinates': [self.lon, self.lat],
@@ -172,8 +196,8 @@ class Record:
     def from_json(cls, jsonstr):
         return cls.from_dict(json_decode(jsonstr))
 
-    def to_json(self):
-        return json.dumps(self.to_dict())
+    def to_json(self, for_add_record=False):
+        return json.dumps(self.to_dict(for_add_record=for_add_record))
 
 
 class APIError(Exception):
