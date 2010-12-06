@@ -8,5 +8,5 @@ Homepage: http://github.com/simplegeo/python-simplegeo-places/
 
 Package: python-simplegeo-places
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-simplegeo-common (>= 1.9)
+Depends: ${misc:Depends}, ${python:Depends}, python-simplegeo-shared (>= 1.9)
 Description: Python library for the SimpleGeo API.
