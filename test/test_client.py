@@ -54,7 +54,7 @@ class ClientTest(unittest.TestCase):
 
     def test_add_record_norecordid(self):
         mockhttp = mock.Mock()
-        handle = 'SG_abcdefghijklmnopqrstuvwyz'
+        handle = 'SG_abcdefghijklmnopqrstuv'
         newloc = 'http://api.simplegeo.com:80/%s/features/%s.json' % (API_VERSION, handle)
         resultrecord = Record(D('11.03'), D('10.03'), simplegeohandle=handle)
         methods_called = []
@@ -85,7 +85,7 @@ class ClientTest(unittest.TestCase):
         self.failUnlessEqual(res.simplegeohandle, handle)
 
     def test_add_record_simplegeohandle(self):
-        handle = 'SG_abcdefghijklmnopqrstuvwyz'
+        handle = 'SG_abcdefghijklmnopqrstuv'
         record = Record(
             simplegeohandle=handle,
             lat=D('37.8016'),
@@ -96,7 +96,7 @@ class ClientTest(unittest.TestCase):
         self.failUnlessRaises(ValueError, self.client.add_record, record)
 
     def test_add_record_simplegeohandle_and_recordid(self):
-        handle = 'SG_abcdefghijklmnopqrstuvwyz'
+        handle = 'SG_abcdefghijklmnopqrstuv'
         recordid = 'this is my record #1. my first record. and it is mine'
         record = Record(
             simplegeohandle=handle,
@@ -110,7 +110,7 @@ class ClientTest(unittest.TestCase):
 
     def test_add_record_recordid(self):
         mockhttp = mock.Mock()
-        handle = 'SG_abcdefghijklmnopqrstuvwyz'
+        handle = 'SG_abcdefghijklmnopqrstuv'
         recordid = 'this is my record #1. my first record. and it is mine'
         newloc = 'http://api.simplegeo.com:80/%s/features/%s.json' % (API_VERSION, handle)
         resultrecord = Record(D('11.03'), D('10.03'), simplegeohandle=handle)
@@ -142,8 +142,8 @@ class ClientTest(unittest.TestCase):
         self.failUnlessEqual(res.simplegeohandle, handle)
 
     def test_get_record(self):
-        handle = 'SG_abcdefghijklmnopqrstuvwyz'
-        resultrecord = Record(handle, D('11.03'), D('10.03'))
+        handle = 'SG_abcdefghijklmnopqrstuv'
+        resultrecord = Record(D('11.03'), D('10.03'), simplegeohandle=handle)
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, resultrecord.to_json())
@@ -194,7 +194,7 @@ class ClientTest(unittest.TestCase):
         self.failUnlessEqual(res, EXAMPLE_RECORD_JSONSTR)
 
     def test_update_record(self):
-        handle = 'SG_abcdefghijklmnopqrstuvwyz'
+        handle = 'SG_abcdefghijklmnopqrstuv'
         rec = Record(D('11.03'), D('10.04'), simplegeohandle=handle)
 
         mockhttp = mock.Mock()
@@ -217,7 +217,7 @@ class ClientTest(unittest.TestCase):
         self.failUnlessEqual(bodyobj.get('geometry')['type'], 'Point')
 
     def test_delete_record(self):
-        handle = 'SG_abcdefghijklmnopqrstuvwyz'
+        handle = 'SG_abcdefghijklmnopqrstuv'
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, "whatever the response body is")
@@ -231,8 +231,8 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(mockhttp.method_calls[0][1][1], 'DELETE')
 
     def test_search(self):
-        rec1 = Record('abcdefghijkmlnopqrstuvwyz1', D('11.03'), D('10.04'), type='place', name="Bob's House Of Monkeys", category="monkey dealership")
-        rec2 = Record('abcdefghijkmlnopqrstuvwyz2', D('11.03'), D('10.05'), type='place', name="Monkey Food 'R' Us", category="pet food store")
+        rec1 = Record(D('11.03'), D('10.04'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', name="Bob's House Of Monkeys", category="monkey dealership")
+        rec2 = Record(D('11.03'), D('10.05'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', name="Monkey Food 'R' Us", category="pet food store")
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, json.dumps({'type': "FeatureColllection", 'features': [rec1.to_dict(), rec2.to_dict()]}))
@@ -249,8 +249,8 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
 
     def test_lat_lon_search(self):
-        rec1 = Record('abcdefghijkmlnopqrstuvwyz1', D('11.03'), D('10.04'), type='place', name="Bob's House Of Monkeys", category="monkey dealership")
-        rec2 = Record('abcdefghijkmlnopqrstuvwyz2', D('11.03'), D('10.05'), type='place', name="Monkey Food 'R' Us", category="pet food store")
+        rec1 = Record(D('11.03'), D('10.04'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', name="Bob's House Of Monkeys", category="monkey dealership")
+        rec2 = Record(D('11.03'), D('10.05'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', name="Monkey Food 'R' Us", category="pet food store")
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, json.dumps({'type': "FeatureColllection", 'features': [rec1.to_dict(), rec2.to_dict()]}))
@@ -267,7 +267,7 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
 
     def test_get_record_bad_json(self):
-        handle = 'SG_abcdefghijklmnopqrstuvwyz'
+        handle = 'SG_abcdefghijklmnopqrstuv'
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, 'some crap')
@@ -293,7 +293,7 @@ class ClientTest(unittest.TestCase):
         string = str(e) 
 
     def test_get_places_error(self):
-        handle = 'SG_abcdefghijklmnopqrstuvwyz'
+        handle = 'SG_abcdefghijklmnopqrstuv'
 
         mockhttp = mock.Mock()
         # mockhttp.request.return_value = ({'status': '500', 'content-type': 'application/json', }, None)

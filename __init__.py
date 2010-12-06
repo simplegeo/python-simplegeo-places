@@ -9,6 +9,7 @@ import time
 import re
 
 from pyutil import jsonutil as json
+from pyutil.assertutil import precondition
 
 def json_decode(jsonstr):
     try:
@@ -16,12 +17,19 @@ def json_decode(jsonstr):
     except (ValueError, TypeError), le:
         raise DecodeError(jsonstr, le)
 
+SIMPLEGEOHANDLE_RSTR=r"""SG_[A-Za-z0-9]{22}(?:_-?[0-9]{1,3}(?:\.[0-9]+)?_-?[0-9]{1,3}(?:\.[0-9]+)?)?(?:@[0-9]+)?$"""
+SIMPLEGEOHANDLE_R= re.compile(SIMPLEGEOHANDLE_RSTR)
+def is_simplegeohandle(s):
+    return isinstance(s, basestring) and SIMPLEGEOHANDLE_R.match(s)
+
 R=re.compile("http://(.*)/features/([A-Za-z_,-]*).json$")
 
 def get_simplegeohandle_from_url(u):
     mo = R.match(u)
     if not mo:
         raise Exception("This is not a SimpleGeo Places URL: %s" % (u,))
+    handle = mo.group(2)
+    assert is_simplegeohandle(handle)
     return mo.group(2)
 
 class Client(object):
@@ -74,6 +82,7 @@ class Client(object):
 
     def get_record(self, simplegeohandle):
         """Return a record for a place."""
+        precondition(is_simplegeohandle(simplegeohandle), "simplegeohandle is required to match the regex %s" % SIMPLEGEOHANDLE_RSTR, simplegeohandle=simplegeohandle)
         endpoint = self.endpoint('features', simplegeohandle=simplegeohandle)
         return Record.from_json(self._request(endpoint, 'GET')[1])
 
@@ -84,6 +93,7 @@ class Client(object):
 
     def delete_record(self, simplegeohandle):
         """Delete a record."""
+        precondition(is_simplegeohandle(simplegeohandle), "simplegeohandle is required to match the regex %s" % SIMPLEGEOHANDLE_RSTR, simplegeohandle=simplegeohandle)
         endpoint = self.endpoint('features', simplegeohandle=simplegeohandle)
         return self._request(endpoint, 'DELETE')[1]
 
@@ -140,6 +150,8 @@ class Record:
         records simplegeohandle, instead of making a second, duplicate
         record.
         """
+        precondition(simplegeohandle is None or is_simplegeohandle(simplegeohandle), "simplegeohandle is required to be None or to match the regex %s" % SIMPLEGEOHANDLE_RSTR, simplegeohandle=simplegeohandle)
+        precondition(recordid is None or isinstance(recordid, basestring), "recordid is required to be None or a string.", recordid=recordid)
         self.simplegeohandle = simplegeohandle
         self.recordid = recordid
         self.lon = lon
