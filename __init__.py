@@ -16,7 +16,7 @@ def json_decode(jsonstr):
     except (ValueError, TypeError), le:
         raise DecodeError(jsonstr, le)
 
-R=re.compile("http://(.*)/places/([A-Za-z_,-]*).json$")
+R=re.compile("http://(.*)/features/([A-Za-z_,-]*).json$")
 
 def get_simplegeohandle_from_url(u):
     mo = R.match(u)
@@ -28,9 +28,9 @@ class Client(object):
     realm = "http://api.simplegeo.com"
     endpoints = {
         'endpoints': 'endpoints.json',
-        'places': 'places/%(simplegeohandle)s.json',
-        'create': 'places',
-        'search': 'places/%(lat)s,%(lon)s?q=%(query)s&category=%(category)s',
+        'features': 'features/%(simplegeohandle)s.json',
+        'create': 'features',
+        'search': 'features/%(lat)s,%(lon)s.json?q=%(query)s&category=%(category)s',
     }
 
     def __init__(self, key, secret, api_version=API_VERSION, host="api.simplegeo.com", port=80):
@@ -74,17 +74,17 @@ class Client(object):
 
     def get_record(self, simplegeohandle):
         """Return a record for a place."""
-        endpoint = self.endpoint('places', simplegeohandle=simplegeohandle)
+        endpoint = self.endpoint('features', simplegeohandle=simplegeohandle)
         return Record.from_json(self._request(endpoint, 'GET')[1])
 
     def update_record(self, record):
         """Update a record."""
-        endpoint = self.endpoint('places', simplegeohandle=record.simplegeohandle)
+        endpoint = self.endpoint('features', simplegeohandle=record.simplegeohandle)
         return self._request(endpoint, 'POST', record.to_json())[1]
 
     def delete_record(self, simplegeohandle):
         """Delete a record."""
-        endpoint = self.endpoint('places', simplegeohandle=simplegeohandle)
+        endpoint = self.endpoint('features', simplegeohandle=simplegeohandle)
         return self._request(endpoint, 'DELETE')[1]
 
     def search(self, lat, lon, query='', category=''):
