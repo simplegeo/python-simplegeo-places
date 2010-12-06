@@ -25,7 +25,7 @@ class Client(object):
     realm = "http://api.simplegeo.com"
     endpoints = {
         'endpoints': 'endpoints.json',
-        'places': 'places/%(simplegeoid)s.json',
+        'places': 'places/%(simplegeohandle)s.json',
         'create': 'places',
         'search': 'places/%(lat)s,%(lon)s?q=%(query)s&category=%(category)s',
     }
@@ -63,20 +63,20 @@ class Client(object):
         endpoint = self.endpoint('create')
         self._request(endpoint, "POST", record.to_json())
 
-    def get_record(self, simplegeoid):
+    def get_record(self, simplegeohandle):
         """Return a record for a place."""
-        endpoint = self.endpoint('places', simplegeoid=simplegeoid)
+        endpoint = self.endpoint('places', simplegeohandle=simplegeohandle)
         result = self._request(endpoint, 'GET')[1]
         return Record.from_json(result)
 
     def update_record(self, record):
         """Update a record."""
-        endpoint = self.endpoint('places', simplegeoid=record.id)
+        endpoint = self.endpoint('places', simplegeohandle=record.simplegeohandle)
         return self._request(endpoint, 'POST', record.to_json())[1]
 
-    def delete_record(self, simplegeoid):
+    def delete_record(self, simplegeohandle):
         """Delete a record."""
-        endpoint = self.endpoint('places', simplegeoid=simplegeoid)
+        endpoint = self.endpoint('places', simplegeohandle=simplegeohandle)
         return self._request(endpoint, 'DELETE')[1]
 
     def search(self, lat, lon, query='', category=''):
@@ -113,8 +113,27 @@ class Client(object):
         return resp, content
 
 class Record:
-    def __init__(self, id, lat, lon, type='object', created=None, **kwargs):
-        self.id = id
+    def __init__(self, lat, lon, simplegeohandle=None, recordid=None, type='object', created=None, **kwargs):
+        """
+        The simplegeohandle and the recordid are both optional -- you
+        have have one or the other or both or neither.
+
+        A simplegeohandle is globally unique and is assigned by the
+        Places service. It is returned from the Places service in the
+        response to a request to add a place to the Places database
+        (the add_record method).
+
+        A recordid is scoped to your particular user account and is
+        chosen by you. The only use for the recordid is in case you
+        call add_record and you have already previously added that
+        record to the database -- if there is already a record from
+        your user account with the same recordid then the Places
+        service will return that record to you, along with that
+        records simplegeohandle, instead of making a second, duplicate
+        record.
+        """
+        self.simplegeohandle = simplegeohandle
+        self.recordid = recordid
         self.lon = lon
         self.lat = lat
         self.type = type
@@ -128,7 +147,7 @@ class Record:
     def from_dict(cls, data):
         assert data
         coord = data['geometry']['coordinates']
-        record = cls(data['id'], lat=coord[1], lon=coord[0])
+        record = cls(simplegeohandle=data.get('simplegeohandle'), recordid=data.get('recordid'), lat=coord[1], lon=coord[0])
         record.type = data['properties']['type']
         record.created = data.get('created', record.created)
         record.__dict__.update(dict((k, v) for k, v in data['properties'].iteritems()
@@ -138,14 +157,15 @@ class Record:
     def to_dict(self):
         return {
             'type': 'Feature',
-            'id': self.id,
+            'simplegeohandle': self.simplegeohandle,
+            'recordid': self.recordid,
             'created': self.created,
             'geometry': {
                 'type': 'Point',
                 'coordinates': [self.lon, self.lat],
             },
-            'properties': dict((k, v) for k, v in self.__dict__.iteritems() 
-                                        if k not in ('lon', 'lat', 'id', 'created')),
+            'properties': dict((k, v) for k, v in self.__dict__.iteritems()
+                                        if k not in ('lon', 'lat', 'simplegeohandle', 'recordid', 'created')),
         }
 
     @classmethod
