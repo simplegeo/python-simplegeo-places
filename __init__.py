@@ -8,7 +8,7 @@ from urlparse import urljoin
 import time
 import re
 
-from jsonutil import jsonutil as json
+from pyutil import jsonutil as json
 
 def json_decode(jsonstr):
     try:
