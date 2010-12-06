@@ -1,7 +1,7 @@
 import time
 import random
 import unittest
-from jsonutil import jsonutil as json
+from pyutil import jsonutil as json
 import random
 from simplegeo.places import Client, Record, APIError, DecodeError
 
