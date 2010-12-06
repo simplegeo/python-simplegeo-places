@@ -124,7 +124,7 @@ class ClientTest(unittest.TestCase):
 
     def test_update_record(self):
         handle = 'SG_abcdefghijklmnopqrstuvwyz'
-        rec = Record(handle, D('11.03'), D('10.04'))
+        rec = Record(D('11.03'), D('10.04'), simplegeohandle=handle)
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, {'token': "this is your polling token"})
