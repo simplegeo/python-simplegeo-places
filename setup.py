@@ -34,7 +34,7 @@ tests_require = ['mock']
 
 # As of 2010-11-22 neither of the above options appear to work to
 # generate code coverage results, but the following does:
-# rm -rf ./.coverage* htmlcov ; coverage run --branch  --include=simplegeo/* setup.py test -s simplegeo.places.test && coverage html
+# rm -rf ./.coverage* htmlcov ; coverage run --branch  --include=simplegeo/* setup.py test && coverage html
 
 setup(name=PKG,
       version=verstr,
@@ -49,4 +49,5 @@ setup(name=PKG,
       zip_safe=False, # actually it is zip safe, but zipping packages doesn't help with anything and can cause some problems (http://bugs.python.org/setuptools/issue33 )
       namespace_packages = ['simplegeo'],
       setup_requires=setup_requires,
+      test_suite='simplegeo.places.test',
       tests_require=tests_require)
