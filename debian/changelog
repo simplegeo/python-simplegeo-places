@@ -1,3 +1,12 @@
+python-simplegeo-places (1.3.63) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * return a list instead of a set from search
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 07 Dec 2010 01:37:54 +0000
+
 python-simplegeo-places (1.3.62) lucid; urgency=low
 
   [ Zooko Ofsimplegeo ]
