@@ -2,6 +2,7 @@ from _version import __version__
 
 API_VERSION = '1.0'
 
+import copy
 from httplib2 import Http
 import oauth2 as oauth
 from urlparse import urljoin
@@ -72,7 +73,11 @@ class Client(object):
     def add_record(self, record):
         """Create a new record, returns the simplegeohandle. """
         endpoint = self.endpoint('create')
-        jsonrec = record.to_json(for_add_record=True)
+        if record.id:
+            # only simplegeohandles or None should be stored in self.id
+            assert is_simplegeohandle(record.id)
+            raise ValueError('A record cannot be added to the Places database when it already has a simplegeohandle: %s' % (record.id,))
+        jsonrec = record.to_json()
         resp, content = self._request(endpoint, "POST", jsonrec)
         if resp['status'] != "202":
             raise APIError(int(resp['status']), content, resp)
@@ -91,7 +96,7 @@ class Client(object):
 
     def update_record(self, record):
         """Update a record."""
-        endpoint = self.endpoint('features', simplegeohandle=record.simplegeohandle)
+        endpoint = self.endpoint('features', simplegeohandle=record.id)
         return self._request(endpoint, 'POST', record.to_json())[1]
 
     def delete_record(self, simplegeohandle):
@@ -134,7 +139,7 @@ class Client(object):
         return resp, content
 
 class Record:
-    def __init__(self, lat, lon, simplegeohandle=None, recordid=None, type='object', created=None, **kwargs):
+    def __init__(self, lat, lon, simplegeohandle=None, recordid=None, type='object', created=None, properties=None):
         """
         The simplegeohandle and the recordid are both optional -- you
         have have one or the other or both or neither.
@@ -144,6 +149,9 @@ class Record:
         response to a request to add a place to the Places database
         (the add_record method).
 
+        The simplegeohandle is stored in the "id" attribute of the
+        Record instance.
+
         A recordid is scoped to your particular user account and is
         chosen by you. The only use for the recordid is in case you
         call add_record and you have already previously added that
@@ -152,10 +160,13 @@ class Record:
         service will return that record to you, along with that
         records simplegeohandle, instead of making a second, duplicate
         record.
+
+        A recordid is stored in the "recordid" attribute of the Record
+        instance.
         """
         precondition(simplegeohandle is None or is_simplegeohandle(simplegeohandle), "simplegeohandle is required to be None or to match the regex %s" % SIMPLEGEOHANDLE_RSTR, simplegeohandle=simplegeohandle)
         precondition(recordid is None or isinstance(recordid, basestring), "recordid is required to be None or a string.", recordid=recordid)
-        self.simplegeohandle = simplegeohandle
+        self.id = simplegeohandle
         self.recordid = recordid
         self.lon = lon
         self.lat = lat
@@ -164,55 +175,45 @@ class Record:
             self.created = int(time.time())
         else:
             self.created = created
-        self.__dict__.update(kwargs)
+        self.properties = {}
+        if properties:
+            self.properties.update(properties)
 
     @classmethod
     def from_dict(cls, data):
         assert isinstance(data, dict), (type(data), repr(data))
         coord = data['geometry']['coordinates']
-        record = cls(simplegeohandle=data.get('simplegeohandle'), recordid=data.get('recordid'), lat=coord[1], lon=coord[0])
-        record.type = data['properties']['type']
+        record = cls(
+            simplegeohandle=data.get('id'),
+            recordid=data.get('properties', {}).get('record_id'),
+            lat=coord[1],
+            lon=coord[0],
+            properties=data.get('properties')
+            )
         record.created = data.get('created', record.created)
-        record.__dict__.update(dict((k, v) for k, v in data['properties'].iteritems()
-                                    if k not in ('type', 'created')))
         return record
 
-    def to_dict(self, for_add_record=False):
-        """
-        Set for_add_record to True if the result is going to be sent
-        to the Places service as part of an add-record operation. When
-        adding records (and only when adding records) the 'id'
-        attribute is set to the recordid (which is optional and may be
-        None), so that the Places service can use the recordid (if
-        present) for generating the simplegeohandle. In other cases
-        the 'id' attribute will be the simplegeohandle, or will be
-        None if the simplegeohandle is not known.
-
-        It is an error to call to_dict(for_add_record=True) when you
-        already have a simplegeohandle for this record.
-        """
-        if for_add_record and self.simplegeohandle:
-            raise ValueError('A record cannot be added to the Places database when it already has a simplegeohandle: %s' % (self.simplegeohandle,))
-        return {
+    def to_dict(self):
+        res = {
             'type': 'Feature',
-            'simplegeohandle': self.simplegeohandle,
-            'recordid': self.recordid,
+            'id': self.id,
             'created': self.created,
-            'id': for_add_record and self.recordid or self.simplegeohandle,
             'geometry': {
                 'type': 'Point',
                 'coordinates': [self.lon, self.lat],
             },
-            'properties': dict((k, v) for k, v in self.__dict__.iteritems()
-                                        if k not in ('lon', 'lat', 'simplegeohandle', 'recordid', 'created')),
+            'properties': copy.deepcopy(self.properties),
+            'recordid': self.recordid,
         }
+        res['properties']['record_id'] = self.recordid
+        return res
 
     @classmethod
     def from_json(cls, jsonstr):
         return cls.from_dict(json_decode(jsonstr))
 
-    def to_json(self, for_add_record=False):
-        return json.dumps(self.to_dict(for_add_record=for_add_record))
+    def to_json(self):
+        return json.dumps(self.to_dict())
 
 
 class APIError(Exception):
@@ -239,4 +240,3 @@ class DecodeError(APIError):
 
     def __repr__(self):
         return "%s content: %s" % (self.description, self.body)
-
