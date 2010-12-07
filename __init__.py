@@ -139,7 +139,7 @@ class Client(object):
         return resp, content
 
 class Record:
-    def __init__(self, lat, lon, simplegeohandle=None, type='object', created=None, properties=None):
+    def __init__(self, lat, lon, simplegeohandle=None, created=None, properties=None):
         """
         The simplegeohandle and the record_id are both optional -- you
         have have one or the other or both or neither.
@@ -171,7 +171,6 @@ class Record:
         self.id = simplegeohandle
         self.lon = lon
         self.lat = lat
-        self.type = type
         if created is None:
             self.created = int(time.time())
         else:
