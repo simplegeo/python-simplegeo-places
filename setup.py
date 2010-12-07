@@ -18,9 +18,6 @@ else:
         print "unable to find version in %s" % (VERSIONFILE,)
         raise RuntimeError("if %s.py exists, it must be well-formed" % (VERSIONFILE,))
 
-setup_requires = []
-tests_require = ['mock']
-
 # nosetests is an optional way to get code-coverage results. Uncomment
 # the following and run "python setup.py nosetests --with-coverage.
 # --cover-erase --cover-tests --cover-inclusive --cover-html"
@@ -44,10 +41,9 @@ setup(name=PKG,
       url="http://github.com/simplegeo/python-simplegeo-places",
       packages = find_packages(),
       license = "MIT License",
-      install_requires=['simplegeo-shared >= 1.9'],
+      install_requires=['simplegeo-shared >= 1.12', 'pyutil >= 1.7.9'],
       keywords="simplegeo",
       zip_safe=False, # actually it is zip safe, but zipping packages doesn't help with anything and can cause some problems (http://bugs.python.org/setuptools/issue33 )
       namespace_packages = ['simplegeo'],
-      setup_requires=setup_requires,
       test_suite='simplegeo.places.test',
-      tests_require=tests_require)
+      tests_require=['mock'])
