@@ -139,9 +139,9 @@ class Client(object):
         return resp, content
 
 class Record:
-    def __init__(self, lat, lon, simplegeohandle=None, recordid=None, type='object', created=None, properties=None):
+    def __init__(self, lat, lon, simplegeohandle=None, type='object', created=None, properties=None):
         """
-        The simplegeohandle and the recordid are both optional -- you
+        The simplegeohandle and the record_id are both optional -- you
         have have one or the other or both or neither.
 
         A simplegeohandle is globally unique and is assigned by the
@@ -149,25 +149,26 @@ class Record:
         response to a request to add a place to the Places database
         (the add_record method).
 
-        The simplegeohandle is stored in the "id" attribute of the
-        Record instance.
+        The simplegeohandle is passed in as an argument to the
+        constructor, named "simplegeohandle", and is stored in the
+        "id" attribute of the Record instance.
 
-        A recordid is scoped to your particular user account and is
-        chosen by you. The only use for the recordid is in case you
+        A record_id is scoped to your particular user account and is
+        chosen by you. The only use for the record_id is in case you
         call add_record and you have already previously added that
         record to the database -- if there is already a record from
-        your user account with the same recordid then the Places
+        your user account with the same record_id then the Places
         service will return that record to you, along with that
         records simplegeohandle, instead of making a second, duplicate
         record.
 
-        A recordid is stored in the "recordid" attribute of the Record
-        instance.
+        A record_id is passed in as a value in the properties dict
+        named "record_id".
         """
         precondition(simplegeohandle is None or is_simplegeohandle(simplegeohandle), "simplegeohandle is required to be None or to match the regex %s" % SIMPLEGEOHANDLE_RSTR, simplegeohandle=simplegeohandle)
-        precondition(recordid is None or isinstance(recordid, basestring), "recordid is required to be None or a string.", recordid=recordid)
+        record_id = properties and properties.get('record_id') or None
+        precondition(record_id is None or isinstance(record_id, basestring), "record_id is required to be None or a string.", record_id=record_id, properties=properties)
         self.id = simplegeohandle
-        self.recordid = recordid
         self.lon = lon
         self.lat = lat
         self.type = type
@@ -185,7 +186,6 @@ class Record:
         coord = data['geometry']['coordinates']
         record = cls(
             simplegeohandle=data.get('id'),
-            recordid=data.get('properties', {}).get('record_id'),
             lat=coord[1],
             lon=coord[0],
             properties=data.get('properties')
@@ -203,9 +203,7 @@ class Record:
                 'coordinates': [self.lon, self.lat],
             },
             'properties': copy.deepcopy(self.properties),
-            'recordid': self.recordid,
         }
-        res['properties']['record_id'] = self.recordid
         return res
 
     @classmethod
