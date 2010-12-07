@@ -1,6 +1,7 @@
 import unittest
 from pyutil import jsonutil as json
-from simplegeo.places import Client, Record, APIError, DecodeError
+from simplegeo.places import Client, Record, APIError
+from simplegeo.shared import DecodeError
 
 from decimal import Decimal as D
 
@@ -268,7 +269,7 @@ class ClientTest(unittest.TestCase):
             self.client.get_record(handle)
         except DecodeError, e:
             self.failUnlessEqual(e.code,None,repr(e.code))
-            self.failUnlessEqual(e.msg,"Could not decode JSON",repr(e.msg))
+            self.failUnless("Could not decode JSON" in e.msg, repr(e.msg))
             repr(e)
 
         self.assertEqual(mockhttp.method_calls[0][0], 'request')
