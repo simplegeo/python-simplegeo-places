@@ -103,7 +103,7 @@ class Client(object):
         result = self._request(endpoint, 'GET')[1]
 
         fc = json_decode(result)
-        return set(Record.from_dict(f) for f in fc['features'])
+        return [Record.from_dict(f) for f in fc['features']]
 
     def _request(self, endpoint, method, data=None):
         """
