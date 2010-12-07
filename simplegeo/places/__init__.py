@@ -22,10 +22,10 @@ SIMPLEGEOHANDLE_R= re.compile(SIMPLEGEOHANDLE_RSTR)
 def is_simplegeohandle(s):
     return isinstance(s, basestring) and SIMPLEGEOHANDLE_R.match(s)
 
-R=re.compile("http://(.*)/features/([A-Za-z_,-]*).json$")
+PLACES_URL_R=re.compile("http://(.*)/features/([A-Za-z_,-]*).json$")
 
 def get_simplegeohandle_from_url(u):
-    mo = R.match(u)
+    mo = PLACES_URL_R.match(u)
     if not mo:
         raise Exception("This is not a SimpleGeo Places URL: %s" % (u,))
     handle = mo.group(2)
@@ -37,8 +37,8 @@ class Client(object):
     endpoints = {
         'endpoints': 'endpoints.json',
         'features': 'features/%(simplegeohandle)s.json',
-        'create': 'features',
-        'search': 'features/%(lat)s,%(lon)s.json?q=%(query)s&category=%(category)s',
+        'create': 'places',
+        'search': 'places/%(lat)s,%(lon)s.json?q=%(query)s&category=%(category)s',
     }
 
     def __init__(self, key, secret, api_version=API_VERSION, host="api.simplegeo.com", port=80):
@@ -70,15 +70,18 @@ class Client(object):
         return urljoin(urljoin(self.uri, self.api_version + '/'), endpoint)
 
     def add_record(self, record):
-        """Create a new record, returns a 301 to the location of the resource."""
+        """Create a new record, returns the simplegeohandle. """
         endpoint = self.endpoint('create')
         jsonrec = record.to_json(for_add_record=True)
         resp, content = self._request(endpoint, "POST", jsonrec)
-        if resp['status'] != "301":
-            raise APIError()
-        newloc = resp['location']
-        handle = get_simplegeohandle_from_url(newloc)
-        return self.get_record(handle)
+        if resp['status'] != "202":
+            raise APIError(int(resp['status']), content, resp)
+        contentobj = json_decode(content)
+        if not contentobj.has_key('id'):
+            raise APIError(int(resp['status']), content, resp)
+        handle = contentobj['id']
+        assert is_simplegeohandle(handle)
+        return handle
 
     def get_record(self, simplegeohandle):
         """Return a record for a place."""
