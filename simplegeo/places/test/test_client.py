@@ -17,7 +17,6 @@ API_PORT = 80
 
 ENDPOINT_DESCR=json.dumps({
         "GET /1.0/features/<handle:[a-zA-Z0-9\\.,_-]+>.json": "Return a record for a place.",
-        "GET /1.0/endpoints.json": "Describe known endpoints.",
         "POST /1.0/features/<handle:.*>.json": "Update a record.",
         "GET /1.0/places/<lat:-?[0-9\\.]+>,<lon:-?[0-9\\.]+>.json": "Search for places near a lat/lon. Query string includes ?q=term and ?q=term&category=cat",
         "POST /1.0/places": "Create a new record, returns a 301 to the location of the resource.",
@@ -35,18 +34,6 @@ class ClientTest(unittest.TestCase):
 
     def test_missing_argument(self):
         self.assertRaises(Exception, self.client.endpoint, 'features')
-
-    def test_endpoint_descriptions(self):
-        mockhttp = mock.Mock()
-        mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json'}, ENDPOINT_DESCR)
-        self.client.http = mockhttp
-        d = self.client.get_endpoint_descriptions()
-
-        self.assertEqual(mockhttp.method_calls[0][0], 'request')
-        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/endpoints.json' % (API_VERSION,))
-        self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
-
-        self.failUnless(isinstance(d, dict), (repr(d), type(d)))
 
     def test_add_record_norecord_id(self):
         mockhttp = mock.Mock()
