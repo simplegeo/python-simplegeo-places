@@ -47,7 +47,7 @@ class ClientTest(unittest.TestCase):
 
         self.failUnless(isinstance(d, dict), (repr(d), type(d)))
 
-    def test_add_record_norecordid(self):
+    def test_add_record_norecord_id(self):
         mockhttp = mock.Mock()
         handle = 'SG_abcdefghijklmnopqrstuv'
         newloc = 'http://api.simplegeo.com:80/%s/places/%s.json' % (API_VERSION, handle)
@@ -89,12 +89,12 @@ class ClientTest(unittest.TestCase):
         # You can't add-record on a record that already has a simplegeo handle. Don't do that.
         self.failUnlessRaises(ValueError, self.client.add_record, record)
 
-    def test_add_record_simplegeohandle_and_recordid(self):
+    def test_add_record_simplegeohandle_and_record_id(self):
         handle = 'SG_abcdefghijklmnopqrstuv'
-        recordid = 'this is my record #1. my first record. and it is mine'
+        record_id = 'this is my record #1. my first record. and it is mine'
         record = Record(
             simplegeohandle=handle,
-            recordid=recordid,
+            properties={'record_id': record_id},
             lat=D('37.8016'),
             lon=D('-122.4783')
         )
@@ -102,10 +102,10 @@ class ClientTest(unittest.TestCase):
         # You can't add-record on a record that already has a simplegeo handle. Don't do that.
         self.failUnlessRaises(ValueError, self.client.add_record, record)
 
-    def test_add_record_recordid(self):
+    def test_add_record_record_id(self):
         mockhttp = mock.Mock()
         handle = 'SG_abcdefghijklmnopqrstuv'
-        recordid = 'this is my record #1. my first record. and it is mine'
+        record_id = 'this is my record #1. my first record. and it is mine'
         newloc = 'http://api.simplegeo.com:80/%s/features/%s.json' % (API_VERSION, handle)
         resultrecord = Record(D('11.03'), D('10.03'), simplegeohandle=handle)
         methods_called = []
@@ -117,7 +117,7 @@ class ClientTest(unittest.TestCase):
             self.failUnlessEqual(args[0], 'http://api.simplegeo.com:80/%s/places' % (API_VERSION,))
             self.failUnlessEqual(args[1], 'POST')
             bodyobj = json.loads(kwargs['body'])
-            self.failUnlessEqual(bodyobj['properties'].get('record_id'), recordid)
+            self.failUnlessEqual(bodyobj['properties'].get('record_id'), record_id)
             methods_called.append(('request', args, kwargs))
             mockhttp.request = mockrequest2
             return ({'status': '202', 'content-type': 'application/json', 'location': newloc}, json.dumps({'id': handle}))
@@ -126,7 +126,7 @@ class ClientTest(unittest.TestCase):
         self.client.http = mockhttp
 
         record = Record(
-            recordid=recordid,
+            properties={'record_id': record_id},
             lat=D('37.8016'),
             lon=D('-122.4783')
         )
