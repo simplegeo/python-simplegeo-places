@@ -1,13 +1,8 @@
-import time
-import random
 import unittest
 from pyutil import jsonutil as json
-import random
 from simplegeo.places import Client, Record, APIError, DecodeError
 
 from decimal import Decimal as D
-
-import os
 
 import mock
 
@@ -122,7 +117,7 @@ class ClientTest(unittest.TestCase):
             self.failUnlessEqual(args[0], 'http://api.simplegeo.com:80/%s/places' % (API_VERSION,))
             self.failUnlessEqual(args[1], 'POST')
             bodyobj = json.loads(kwargs['body'])
-            self.failUnlessEqual(bodyobj['id'], recordid)
+            self.failUnlessEqual(bodyobj['properties'].get('record_id'), recordid)
             methods_called.append(('request', args, kwargs))
             mockhttp.request = mockrequest2
             return ({'status': '202', 'content-type': 'application/json', 'location': newloc}, json.dumps({'id': handle}))
@@ -169,8 +164,6 @@ class ClientTest(unittest.TestCase):
     def test_dont_json_decode_results(self):
         """ _request() is required to return the exact string that the HTTP
         server sent to it -- no transforming it, such as by json-decoding. """
-
-        EXAMPLE_RECORD_JSONSTR=json.dumps({ 'geometry' : { 'type' : 'Point', 'coordinates' : [D('10.0'), D('11.0')] }, 'id' : 'my_id', 'type' : 'Feature', 'properties' : { 'key' : 'value'  , 'type' : 'object' } })
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, '{ "Hello": "I am a string. \xe2\x9d\xa4" }'.decode('utf-8'))
@@ -229,8 +222,8 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(mockhttp.method_calls[0][1][1], 'DELETE')
 
     def test_search(self):
-        rec1 = Record(D('11.03'), D('10.04'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', name="Bob's House Of Monkeys", category="monkey dealership")
-        rec2 = Record(D('11.03'), D('10.05'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', name="Monkey Food 'R' Us", category="pet food store")
+        rec1 = Record(D('11.03'), D('10.04'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', properties={'name': "Bob's House Of Monkeys", 'category': "monkey dealership"})
+        rec2 = Record(D('11.03'), D('10.05'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', properties={'name': "Monkey Food 'R' Us", 'category': "pet food store"})
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, json.dumps({'type': "FeatureColllection", 'features': [rec1.to_dict(), rec2.to_dict()]}))
@@ -247,8 +240,8 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
 
     def test_lat_lon_search(self):
-        rec1 = Record(D('11.03'), D('10.04'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', name="Bob's House Of Monkeys", category="monkey dealership")
-        rec2 = Record(D('11.03'), D('10.05'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', name="Monkey Food 'R' Us", category="pet food store")
+        rec1 = Record(D('11.03'), D('10.04'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', properties={'name': "Bob's House Of Monkeys", 'category': "monkey dealership"})
+        rec2 = Record(D('11.03'), D('10.05'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', properties={'name': "Monkey Food 'R' Us", 'category': "pet food store"})
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, json.dumps({'type': "FeatureColllection", 'features': [rec1.to_dict(), rec2.to_dict()]}))
@@ -272,11 +265,11 @@ class ClientTest(unittest.TestCase):
         self.client.http = mockhttp
 
         try:
-            res = self.client.get_record(handle)
+            self.client.get_record(handle)
         except DecodeError, e:
             self.failUnlessEqual(e.code,None,repr(e.code))
             self.failUnlessEqual(e.msg,"Could not decode JSON",repr(e.msg))
-            decode_e = repr(e)
+            repr(e)
 
         self.assertEqual(mockhttp.method_calls[0][0], 'request')
         self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/features/%s.json' % (API_VERSION, handle))
@@ -287,8 +280,8 @@ class ClientTest(unittest.TestCase):
         e = APIError(500, 'whee', {'status': "500"})
         self.failUnlessEqual(e.code, 500)
         self.failUnlessEqual(e.msg, 'whee')
-        representation = repr(e)
-        string = str(e) 
+        repr(e)
+        str(e)
 
     def test_get_places_error(self):
         handle = 'SG_abcdefghijklmnopqrstuv'
@@ -299,7 +292,7 @@ class ClientTest(unittest.TestCase):
         self.client.http = mockhttp
 
         try:
-            res = self.client.get_record(handle)
+            self.client.get_record(handle)
         except APIError, e:
             self.failUnlessEqual(e.code, 500, repr(e.code))
             self.failUnlessEqual(e.msg, '{"message": "help my web server is confuzzled"}', (type(e.msg), repr(e.msg)))
@@ -307,4 +300,3 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(mockhttp.method_calls[0][0], 'request')
         self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/features/%s.json' % (API_VERSION, handle))
         self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
-

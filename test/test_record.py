@@ -10,28 +10,28 @@ class RecordTest(unittest.TestCase):
         mock_time.return_value = 100
         record = Record(D('11.0'), D('10.0'), recordid='my_id')
         self.failUnlessEqual(record.recordid, 'my_id')
-        self.failUnlessEqual(record.simplegeohandle, None)
+        self.failUnlessEqual(record.id, None)
         self.failUnlessEqual(record.lat, D('11.0'))
         self.failUnlessEqual(record.lon, D('10.0'))
         self.failUnlessEqual(record.created, 100)
 
         record = Record(D('11.0'), D('10.0'), simplegeohandle='SG_abcdefghijklmnopqrstuv')
         self.failUnlessEqual(record.recordid, None)
-        self.failUnlessEqual(record.simplegeohandle, 'SG_abcdefghijklmnopqrstuv')
+        self.failUnlessEqual(record.id, 'SG_abcdefghijklmnopqrstuv')
         self.failUnlessEqual(record.lat, D('11.0'))
         self.failUnlessEqual(record.lon, D('10.0'))
         self.failUnlessEqual(record.created, 100)
 
         record = Record(D('11.0'), D('10.0'), recordid='my_id', simplegeohandle='SG_abcdefghijklmnopqrstuv')
         self.failUnlessEqual(record.recordid, 'my_id')
-        self.failUnlessEqual(record.simplegeohandle, 'SG_abcdefghijklmnopqrstuv')
+        self.failUnlessEqual(record.id, 'SG_abcdefghijklmnopqrstuv')
         self.failUnlessEqual(record.lat, D('11.0'))
         self.failUnlessEqual(record.lon, D('10.0'))
         self.failUnlessEqual(record.created, 100)
 
         record = Record(D('11.0'), D('10.0'))
         self.failUnlessEqual(record.recordid, None)
-        self.failUnlessEqual(record.simplegeohandle, None)
+        self.failUnlessEqual(record.id, None)
         self.failUnlessEqual(record.lat, D('11.0'))
         self.failUnlessEqual(record.lon, D('10.0'))
         self.failUnlessEqual(record.created, 100)
@@ -58,9 +58,9 @@ class RecordTest(unittest.TestCase):
                                    'type' : 'Point',
                                    'coordinates' : [D('10.0'), D('11.0')]
                                    },
-                     'recordid' : 'my_id',
                      'type' : 'Feature',
                      'properties' : {
+                                     'record_id' : 'my_id',
                                      'key' : 'value'  ,
                                      'type' : 'object'
                                      }
@@ -70,8 +70,8 @@ class RecordTest(unittest.TestCase):
         self.assertEquals(record.lat, D('11.0'))
         self.assertEquals(record.lon, D('10.0'))
         self.assertEquals(record.recordid, 'my_id')
-        self.assertEquals(record.key, 'value')
-        self.assertEquals(record.type, 'object')
+        self.assertEquals(record.properties['key'], 'value')
+        self.assertEquals(record.properties['type'], 'object')
         self.assertEquals(record.created, 99)
 
         record_dict = {
@@ -79,7 +79,7 @@ class RecordTest(unittest.TestCase):
                                    'type' : 'Point',
                                    'coordinates' : [D('10.0'), D('11.0')]
                                    },
-                     'simplegeohandle' : 'SG_abcdefghijklmnopqrstuv',
+                     'id' : 'SG_abcdefghijklmnopqrstuv',
                      'type' : 'Feature',
                      'properties' : {
                                      'key' : 'value'  ,
@@ -91,9 +91,9 @@ class RecordTest(unittest.TestCase):
         self.assertEquals(record.lat, D('11.0'))
         self.assertEquals(record.lon, D('10.0'))
         self.assertEquals(record.recordid, None)
-        self.assertEquals(record.simplegeohandle, 'SG_abcdefghijklmnopqrstuv')
-        self.assertEquals(record.key, 'value')
-        self.assertEquals(record.type, 'object')
+        self.assertEquals(record.id, 'SG_abcdefghijklmnopqrstuv')
+        self.assertEquals(record.properties.get('key'), 'value')
+        self.assertEquals(record.properties.get('type'), 'object')
         self.assertEquals(record.created, 99)
 
         record_dict = {
@@ -101,10 +101,10 @@ class RecordTest(unittest.TestCase):
                                    'type' : 'Point',
                                    'coordinates' : [D('10.0'), D('11.0')]
                                    },
-                     'recordid' : 'my_id',
-                     'simplegeohandle' : 'SG_abcdefghijklmnopqrstuv',
+                     'id' : 'SG_abcdefghijklmnopqrstuv',
                      'type' : 'Feature',
                      'properties' : {
+                                     'record_id' : 'my_id',
                                      'key' : 'value'  ,
                                      'type' : 'object'
                                      }
@@ -114,9 +114,9 @@ class RecordTest(unittest.TestCase):
         self.assertEquals(record.lat, D('11.0'))
         self.assertEquals(record.lon, D('10.0'))
         self.assertEquals(record.recordid, 'my_id')
-        self.assertEquals(record.simplegeohandle, 'SG_abcdefghijklmnopqrstuv')
-        self.assertEquals(record.key, 'value')
-        self.assertEquals(record.type, 'object')
+        self.assertEquals(record.id, 'SG_abcdefghijklmnopqrstuv')
+        self.assertEquals(record.properties.get('key'), 'value')
+        self.assertEquals(record.properties.get('type'), 'object')
         self.assertEquals(record.created, 99)
 
         record_dict = {
@@ -135,9 +135,9 @@ class RecordTest(unittest.TestCase):
         self.assertEquals(record.lat, D('11.0'))
         self.assertEquals(record.lon, D('10.0'))
         self.assertEquals(record.recordid, None)
-        self.assertEquals(record.simplegeohandle, None)
-        self.assertEquals(record.key, 'value')
-        self.assertEquals(record.type, 'object')
+        self.assertEquals(record.id, None)
+        self.assertEquals(record.properties.get('key'), 'value')
+        self.assertEquals(record.properties.get('type'), 'object')
         self.assertEquals(record.created, 99)
 
         record_dict = { 'created' : 98,
@@ -145,9 +145,9 @@ class RecordTest(unittest.TestCase):
                                    'type' : 'Point',
                                    'coordinates' : [D('10.03'), D('11.0')]
                                    },
-                     'recordid' : 'my_id',
                      'type' : 'Feature',
                      'properties' : {
+                                     'record_id' : 'my_id',
                                      'key' : 'value'  ,
                                      'type' : 'object'
                                      }
@@ -157,8 +157,8 @@ class RecordTest(unittest.TestCase):
         self.assertEquals(record.lat, D('11.0'))
         self.assertEquals(record.lon, D('10.03'))
         self.assertEquals(record.recordid, 'my_id')
-        self.assertEquals(record.key, 'value')
-        self.assertEquals(record.type, 'object')
+        self.assertEquals(record.properties.get('key'), 'value')
+        self.assertEquals(record.properties.get('type'), 'object')
         self.assertEquals(record.created, 98)
 
         record_dict = { 'created' : 97,
@@ -166,9 +166,9 @@ class RecordTest(unittest.TestCase):
                                    'type' : 'Point',
                                    'coordinates' : [10.0, 11.0]
                                    },
-                     'recordid' : 'my_id',
                      'type' : 'Feature',
                      'properties' : {
+                                     'record_id' : 'my_id',
                                      'key' : 'value'  ,
                                      'type' : 'object'
                                      }
@@ -178,23 +178,29 @@ class RecordTest(unittest.TestCase):
         self.assertEquals(record.lat, 11.0)
         self.assertEquals(record.lon, 10.0)
         self.assertEquals(record.recordid, 'my_id')
-        self.assertEquals(record.key, 'value')
-        self.assertEquals(record.type, 'object')
+        self.assertEquals(record.properties.get('key'), 'value')
+        self.assertEquals(record.properties.get('type'), 'object')
         self.assertEquals(record.created, 97)
 
     def test_record_to_dict_sets_id_correctly(self):
         handle = 'SG_abcdefghijklmnopqrstuv'
         recordid = 'this is my record #1. my first record. and it is mine'
         rec = Record(D('11.03'), D('10.03'), simplegeohandle=handle, recordid=recordid)
-        self.failUnlessRaises(ValueError, rec.to_dict, for_add_record=True)
-
-        rec = Record(D('11.03'), D('10.03'), simplegeohandle=handle, recordid=None)
-        self.failUnlessRaises(ValueError, rec.to_dict, for_add_record=True)
-
-        rec = Record(D('11.03'), D('10.03'), simplegeohandle=handle, recordid=None)
-        dic = rec.to_dict(for_add_record=False)
+        dic = rec.to_dict()
         self.failUnlessEqual(dic.get('id'), handle)
+        self.failUnlessEqual(dic.get('properties', {}).get('record_id'), recordid)
+
+        rec = Record(D('11.03'), D('10.03'), simplegeohandle=handle, recordid=None)
+        dic = rec.to_dict()
+        self.failUnlessEqual(dic.get('id'), handle)
+        self.failUnlessEqual(dic.get('properties', {}).get('record_id'), None)
+
+        rec = Record(D('11.03'), D('10.03'), simplegeohandle=handle, recordid=None)
+        dic = rec.to_dict()
+        self.failUnlessEqual(dic.get('id'), handle)
+        self.failUnlessEqual(dic.get('properties', {}).get('record_id'), None)
 
         rec = Record(D('11.03'), D('10.03'), simplegeohandle=None, recordid=None)
-        dic = rec.to_dict(for_add_record=False)
+        dic = rec.to_dict()
         self.failUnlessEqual(dic.get('id'), None)
+        self.failUnlessEqual(dic.get('properties', {}).get('record_id'), None)
