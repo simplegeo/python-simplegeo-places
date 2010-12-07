@@ -222,8 +222,8 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(mockhttp.method_calls[0][1][1], 'DELETE')
 
     def test_search(self):
-        rec1 = Record(D('11.03'), D('10.04'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', properties={'name': "Bob's House Of Monkeys", 'category': "monkey dealership"})
-        rec2 = Record(D('11.03'), D('10.05'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', properties={'name': "Monkey Food 'R' Us", 'category': "pet food store"})
+        rec1 = Record(D('11.03'), D('10.04'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': "Bob's House Of Monkeys", 'category': "monkey dealership"})
+        rec2 = Record(D('11.03'), D('10.05'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': "Monkey Food 'R' Us", 'category': "pet food store"})
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, json.dumps({'type': "FeatureColllection", 'features': [rec1.to_dict(), rec2.to_dict()]}))
@@ -240,8 +240,8 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
 
     def test_lat_lon_search(self):
-        rec1 = Record(D('11.03'), D('10.04'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', properties={'name': "Bob's House Of Monkeys", 'category': "monkey dealership"})
-        rec2 = Record(D('11.03'), D('10.05'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', type='place', properties={'name': "Monkey Food 'R' Us", 'category': "pet food store"})
+        rec1 = Record(D('11.03'), D('10.04'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': "Bob's House Of Monkeys", 'category': "monkey dealership"})
+        rec2 = Record(D('11.03'), D('10.05'), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': "Monkey Food 'R' Us", 'category': "pet food store"})
 
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, json.dumps({'type': "FeatureColllection", 'features': [rec1.to_dict(), rec2.to_dict()]}))
