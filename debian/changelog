@@ -1,3 +1,15 @@
+python-simplegeo-places (1.3.66) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * clean-up: remove record_id as a special kwargs and relegate it to
+    being *solely* an entry in properties, also change the spelling to
+    match the spelling in the HTTP API ("record_id" instead of
+    "recordid")
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 07 Dec 2010 19:51:55 +0000
+
 python-simplegeo-places (1.3.65) lucid; urgency=low
 
   [ Zooko Ofsimplegeo ]
