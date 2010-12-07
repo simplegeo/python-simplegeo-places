@@ -142,7 +142,7 @@ class Record:
     def __init__(self, lat, lon, simplegeohandle=None, type='object', created=None, properties=None):
         """
         The simplegeohandle and the record_id are both optional -- you
-        have have one or the other or both or neither.
+        can have one or the other or both or neither.
 
         A simplegeohandle is globally unique and is assigned by the
         Places service. It is returned from the Places service in the
