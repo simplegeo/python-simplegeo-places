@@ -5,7 +5,7 @@ import time
 import numpy
 
 from simplegeo.places import Client
-from simplegeo.places import Record, APIError
+from simplegeo.shared import Feature, APIError
 
 MY_OAUTH_KEY = ''
 MY_OAUTH_SECRET = ''
@@ -16,23 +16,27 @@ API_HOST = ''
 API_PORT = 80
 
 class PerformanceTest(object):
-    def __init__(self, number_of_requests=1):
+    def __init__(self, number_of_requests=100):
         self.number_of_requests = number_of_requests
         self.client = Client(MY_OAUTH_KEY, MY_OAUTH_SECRET, API_VERSION, API_HOST, API_PORT)
         self.responses = []
-        self.request_test = { 'add_record': self._timed_response_add_record,
-                         'get_record': self._timed_response_get_record,
-                         'update_record': self._timed_response_get_record,
-                         'delete_record': self._timed_response_add_record,
+        self.request_test = { 'add_feature': self._timed_response_add_feature,
+                         'get_feature': self._timed_response_get_feature,
+                         'update_feature': self._timed_response_get_feature,
+                         'delete_feature': self._timed_response_add_feature,
                          'search': self._timed_response_search}
         self.simplegeoids =[]
 
     def run(self):
-        self.performance_test('add_record')
+        self.performance_test('add_feature')
         time.sleep(30)
-        self.performance_test('get_record')
-        self.performance_test('update_record')        
+        self.responses = []
+        self.performance_test('get_feature')
+        self.responses = []
+        self.performance_test('update_feature')
+        self.responses = []        
         self.performance_test('search')
+        self.responses = []
 
     def performance_test(self, request_type):
         requests_completed = 0 
@@ -67,72 +71,91 @@ class PerformanceTest(object):
     def _timed_response(self, request_type):
         return self.request_test[request_type]()
 
-    def _timed_response_add_record(self):
-        record = self._random_record()
-        print 'Timing client.add_record(%s)\n\n' % (record.to_dict())
+    def _timed_response_add_feature(self):
+        feature = self._random_feature()
+        print 'Timing: client.add_feature(%s)\n\n' % (feature.to_dict())
         start_time = time.time()
-        response = self.client.add_record(record)
+        response = self.client.add_feature(feature)
         time_elapsed = time.time() - start_time
+        print 'Headers: %s\n\n' % self.client.get_most_recent_http_headers()
+        header_time_elapsed = float(self.client.get_most_recent_http_headers().get('x-response-time', '0').rstrip('ms'))
+        print 'Header Time elapsed: %s' % header_time_elapsed
         print 'Time elapsed: %s' % time_elapsed
         self.simplegeoids.append(response);
-        return {'record': record.to_dict(),
+        return {'feature': feature.to_dict(),
                 'response': response,
-                'time_elapsed': time_elapsed}
+                'time_elapsed': time_elapsed,
+                'header_time_elapsed': header_time_elapsed}
 
-    def _timed_response_get_record(self):
+    def _timed_response_get_feature(self):
         sgid = self._random_simplegeoid()
-        print 'Timing client.get_record(%s)\n\n' % sgid
+        print 'Timing: client.get_feature(%s)\n\n' % sgid
         start_time = time.time()
-        response = self.client.get_record(sgid)
+        response = self.client.get_feature(sgid)
         time_elapsed = time.time() - start_time
+        #print 'Headers: %s\n\n' % self.client.get_most_recent_http_headers()
+        header_time_elapsed = float(self.client.get_most_recent_http_headers().get('x-response-time', '0').rstrip('ms'))
+        print 'Header Time elapsed: %s' % header_time_elapsed
         print 'Time elapsed: %s' % time_elapsed
         return {'sgid': sgid,
                 'response': response,
-                'time_elapsed': time_elapsed}
+                'time_elapsed': time_elapsed,
+                'header_time_elapsed': header_time_elapsed}
 
-    def _timed_response_update_record(self):
+    def _timed_response_update_feature(self):
         sgid = self._random_simplegeoid()
-        record = self.client.get_record(sgid)
-        print 'Timing client.update_record(%s,%s)\n\n' % (sgid, record.to_dict())
+        feature = self.client.get_feature(sgid)
+        print 'Timing: client.update_feature(%s,%s)\n\n' % (sgid, feature.to_dict())
         #changing the lat/lon to make it a *real* update
-        (record.lat,record.lon) = self._random_US_lat_lon()
+        (feature.lat,feature.lon) = self._random_US_lat_lon()
         start_time = time.time()
-        response = self.client.update_record(sgid,record)
+        response = self.client.update_feature(sgid,feature)
         time_elapsed = time.time() - start_time
+        #print 'Headers: %s\n\n' % self.client.get_most_recent_http_headers()
+        header_time_elapsed = self.client.get_most_recent_http_headers()
+        print 'Header Time elapsed: %s' % header_time_elapsed
         print 'Time elapsed: %s' % time_elapsed
         return {'sgid': sgid,
-                'record': record.to_dict(),
+                'feature': feature.to_dict(),
                 'response': response,
-                'time_elapsed': time_elapsed}
+                'time_elapsed': time_elapsed,
+                'header_time_elapsed': header_time_elapsed}
 
-    def _timed_response_delete_record(self):
+    def _timed_response_delete_feature(self):
         sgid = self._random_simplegeoid()
         simplegeoids.remove(sgid)
-        print 'Timing client.delete_record(%s)\n\n' % sgid
+        print 'Timing: client.delete_feature(%s)\n\n' % sgid
         start_time = time.time()
-        response = self.client.delete_record(sgid)
+        response = self.client.delete_feature(sgid)
         time_elapsed = time.time() - start_time
+        #print 'Headers: %s\n\n' % self.client.get_most_recent_http_headers()
+        header_time_elapsed = self.client.get_most_recent_http_headers()
+        print 'Header Time elapsed: %s' % header_time_elapsed
         print 'Time elapsed: %s' % time_elapsed
         return {'sgid': sgid,
                 'response': response,
-                'time_elapsed': time_elapsed}
+                'time_elapsed': time_elapsed,
+                'header_time_elapsed': header_time_elapsed}
 
     def _timed_response_search(self):
         (lat,lon) = self._random_US_lat_lon()
-        print 'Timing client.search(%s,%s,%s)\n\n' % (lat,lon,'restaurant')
+        print 'Timing: client.search(%s,%s,%s)\n\n' % (lat,lon,'restaurant')
         start_time = time.time()
         response = self.client.search(lat,lon,query='',category='restaurant')
         time_elapsed = time.time() - start_time
+        #print 'Headers: %s\n\n' % self.client.get_most_recent_http_headers()
+        header_time_elapsed = self.client.get_most_recent_http_headers()
+        print 'Header Time elapsed: %s' % header_time_elapsed
         print 'Time elapsed: %s' % time_elapsed
-        return {'sgid': sgid,
-                'response': response,
-                'time_elapsed': time_elapsed}
+        return {'response': response,
+                'time_elapsed': time_elapsed,
+                'header_time_elapsed': header_time_elapsed}
 
-    def _random_record(self):
-        (lat,lon) = self._random_US_lat_lon()
+    def _random_feature(self):
+        point = (lat,lon) = self._random_US_lat_lon()
         properties_d = {"name": 'name_%s_%s' % (lat,lon)}
-        record = Record(lat, lon, properties=properties_d)
-        return record
+        feature = Feature(coordinates=point, properties=properties_d)
+        return feature
     def _random_US_lat_lon(self):
         return (random.uniform(25.0, 50.0), random.uniform(-125.0, -65.0))
 
