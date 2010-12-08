@@ -41,7 +41,7 @@ setup(name=PKG,
       url="http://github.com/simplegeo/python-simplegeo-places",
       packages = find_packages(),
       license = "MIT License",
-      install_requires=['simplegeo-shared >= 1.12', 'pyutil >= 1.7.9'],
+      install_requires=['simplegeo-shared >= 1.13', 'pyutil >= 1.7.9'],
       keywords="simplegeo",
       zip_safe=False, # actually it is zip safe, but zipping packages doesn't help with anything and can cause some problems (http://bugs.python.org/setuptools/issue33 )
       namespace_packages = ['simplegeo'],
