@@ -60,7 +60,7 @@ class ClientTest(unittest.TestCase):
         self.client.http = mockhttp
 
         feature = Feature(
-            coordinates=(D('-122.4783'), D('37.8016'))
+            coordinates=(D('37.8016'), D('-122.4783'))
         )
 
         res = self.client.add_feature(feature)
@@ -70,7 +70,7 @@ class ClientTest(unittest.TestCase):
         handle = 'SG_abcdefghijklmnopqrstuv'
         feature = Feature(
             simplegeohandle=handle,
-            coordinates=(D('-122.4783'), D('37.8016'))
+            coordinates=(D('37.8016'), D('-122.4783'))
         )
 
         # You can't add-feature on a feature that already has a simplegeo handle. Don't do that.
@@ -82,7 +82,7 @@ class ClientTest(unittest.TestCase):
         feature = Feature(
             simplegeohandle=handle,
             properties={'record_id': record_id},
-            coordinates = (D('-122.4783'), D('37.8016'))
+            coordinates = (D('37.8016'), D('-122.4783'))
         )
 
         # You can't add-feature on a feature that already has a simplegeo handle. Don't do that.
@@ -113,7 +113,7 @@ class ClientTest(unittest.TestCase):
 
         feature = Feature(
             properties={'record_id': record_id},
-            coordinates = (D('-122.4783'), D('37.8016'))
+            coordinates = (D('37.8016'), D('-122.4783'))
         )
 
         res = self.client.add_feature(feature)
