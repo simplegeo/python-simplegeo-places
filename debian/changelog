@@ -1,3 +1,138 @@
+python-simplegeo-places (1.3.71) lucid; urgency=low
+
+  [ ansate ]
+  * move test_record out to -shared; update to new version of -share
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 08 Dec 2010 03:35:16 +0000
+
+python-simplegeo-places (1.3.70) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * hide the endpoints endpoint
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 07 Dec 2010 23:43:55 +0000
+
+python-simplegeo-places (1.3.69) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * use the newly featureful -shared library instead of maintaining
+    those features in the -places library
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 07 Dec 2010 22:20:07 +0000
+
+python-simplegeo-places (1.3.68) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * remove obsolete "type" arg to Record __init__
+  * fix tests to accomodate the lack of a "type" arg to __init__ of
+    Record
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 07 Dec 2010 21:02:55 +0000
+
+python-simplegeo-places (1.3.66) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * clean-up: remove record_id as a special kwargs and relegate it to
+    being *solely* an entry in properties, also change the spelling to
+    match the spelling in the HTTP API ("record_id" instead of
+    "recordid")
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 07 Dec 2010 19:51:55 +0000
+
+python-simplegeo-places (1.3.65) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * finish updating it for the new API that transports the record_id
+    inside the properties dict, and finish making the properties dict
+    separate from the Record instance's __dict__
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 07 Dec 2010 19:39:55 +0000
+
+python-simplegeo-places (1.3.64) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * match the latest revision of the API -- new endpoint names and add-
+    record returns a simplegeo handle instead of a 301 redirect
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 07 Dec 2010 05:40:54 +0000
+
+python-simplegeo-places (1.3.63) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * return a list instead of a set from search
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 07 Dec 2010 01:37:54 +0000
+
+python-simplegeo-places (1.3.62) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add preconditions checking that the arguments to Record are
+    correctly typed, fix bugs in unit tests thus discovered
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Mon, 06 Dec 2010 23:56:54 +0000
+
+python-simplegeo-places (1.3.61) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * change to new API where every endpoint is named "features" instead
+    of "places" not 100% sure that this is really the true final API
+    that we want, but whatever. It is easy enough to change and there is
+    100% test coverage to make sure we don't overlook some use of it in
+    this library.
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Mon, 06 Dec 2010 22:18:54 +0000
+
+python-simplegeo-places (1.3.60) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * update client for API tweaks that were made today, and being
+    attempting to debianize it
+
+  [ Simple Geebus ]
+
+  [ ansate ]
+  * lots more tests, which moved around some things in init noteably:
+    request no longer tries to turn things into records because most
+    endpts do not give back records
+
+  [ Zooko Ofsimplegeo ]
+  * fix missing code for endpoints endpoint
+  * update client for API tweaks that were made today, and being
+    attempting to debianize it
+  * make simplegeohandle and recordid be two separate, optional fields
+  * complete the add-record functionality, including managing the
+    difference between simplegeohandle and recordid, and following the
+    301 from record addition * depend on simplegeo-shared instead of
+    simplegeo-common * version number bump to 1.3
+  * switch debian/control from -common to -shared
+  * add build-dep on -shared, set test-suite so that you can run tests
+    with "python setup.py test"
+  * get jsonutil from pyutil instead of from jsonutil
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Mon, 06 Dec 2010 22:04:45 +0000
+
 python-simplegeo-places (1.2.52) lucid; urgency=low
 
   [ ansate ]
