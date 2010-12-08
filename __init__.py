@@ -2,7 +2,7 @@ API_VERSION = '1.0'
 
 from pyutil.assertutil import precondition
 
-from simplegeo.shared import APIError, Feature, SIMPLEGEOHANDLE_RSTR, is_simplegeohandle, json_decode
+from simplegeo.shared import APIError, Feature, SIMPLEGEOHANDLE_RSTR, is_simplegeohandle, json_decode, is_valid_lat, is_valid_lon
 from simplegeo.shared import Client as SGClient
 
 endpoints = {
@@ -46,6 +46,9 @@ class Client(SGClient):
 
     def search(self, lat, lon, query='', category=''):
         """Search for places near a lat/lon."""
+        precondition(is_valid_lat(lat), lat)
+        precondition(is_valid_lon(lon), lon)
+
         endpoint = self._endpoint('search', lat=lat, lon=lon, query=query, category=category)
 
         if query != '' or category != '':
