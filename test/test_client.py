@@ -19,7 +19,7 @@ ENDPOINT_DESCR=json.dumps({
         "GET /1.0/features/<handle:[a-zA-Z0-9\\.,_-]+>.json": "Return a record for a place.",
         "POST /1.0/features/<handle:.*>.json": "Update a record.",
         "GET /1.0/places/<lat:-?[0-9\\.]+>,<lon:-?[0-9\\.]+>.json": "Search for places near a lat/lon. Query string includes ?q=term and ?q=term&category=cat",
-        "POST /1.0/places": "Create a new record, returns a 301 to the location of the resource.",
+        "POST /1.0/places": "Create a new record, returns the handle",
         "GET /1.0/debug/<number:\\d+>": "Undocumented.",
         "DELETE /1.0/features/<handle:.*>.json": "Delete a record."})
 
