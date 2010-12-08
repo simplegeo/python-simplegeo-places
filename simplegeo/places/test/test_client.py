@@ -19,7 +19,7 @@ ENDPOINT_DESCR=json.dumps({
         "GET /1.0/features/<handle:[a-zA-Z0-9\\.,_-]+>.json": "Return a feature for a place.",
         "POST /1.0/features/<handle:.*>.json": "Update a feature.",
         "GET /1.0/places/<lat:-?[0-9\\.]+>,<lon:-?[0-9\\.]+>.json": "Search for places near a lat/lon. Query string includes ?q=term and ?q=term&category=cat",
-        "POST /1.0/places": "Create a new feature, returns a 301 to the location of the resource.",
+        "POST /1.0/places": "Create a new record, returns the handle",
         "GET /1.0/debug/<number:\\d+>": "Undocumented.",
         "DELETE /1.0/features/<handle:.*>.json": "Delete a feature."})
 
@@ -60,7 +60,7 @@ class ClientTest(unittest.TestCase):
         self.client.http = mockhttp
 
         feature = Feature(
-            coordinates=(D('37.8016'),D('-122.4783'))
+            coordinates=(D('-122.4783'), D('37.8016'))
         )
 
         res = self.client.add_feature(feature)
@@ -70,7 +70,7 @@ class ClientTest(unittest.TestCase):
         handle = 'SG_abcdefghijklmnopqrstuv'
         feature = Feature(
             simplegeohandle=handle,
-            coordinates=(D('37.8016'), D('-122.4783'))
+            coordinates=(D('-122.4783'), D('37.8016'))
         )
 
         # You can't add-feature on a feature that already has a simplegeo handle. Don't do that.
@@ -82,7 +82,7 @@ class ClientTest(unittest.TestCase):
         feature = Feature(
             simplegeohandle=handle,
             properties={'record_id': record_id},
-            coordinates = (D('37.8016'), D('-122.4783'))
+            coordinates = (D('-122.4783'), D('37.8016'))
         )
 
         # You can't add-feature on a feature that already has a simplegeo handle. Don't do that.
@@ -113,7 +113,7 @@ class ClientTest(unittest.TestCase):
 
         feature = Feature(
             properties={'record_id': record_id},
-            coordinates = (D('37.8016'),D('-122.4783'))
+            coordinates = (D('-122.4783'), D('37.8016'))
         )
 
         res = self.client.add_feature(feature)
@@ -213,6 +213,9 @@ class ClientTest(unittest.TestCase):
         mockhttp = mock.Mock()
         mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, json.dumps({'type': "FeatureColllection", 'features': [rec1.to_dict(), rec2.to_dict()]}))
         self.client.http = mockhttp
+
+        self.failUnlessRaises(AssertionError, self.client.search, -91, 100)
+        self.failUnlessRaises(AssertionError, self.client.search, -81, 181)
 
         lat = D('11.03')
         lon = D('10.04')
