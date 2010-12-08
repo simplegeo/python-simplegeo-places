@@ -6,7 +6,6 @@ from simplegeo.shared import APIError, Feature, SIMPLEGEOHANDLE_RSTR, is_simpleg
 from simplegeo.shared import Client as SGClient
 
 endpoints = {
-    'endpoints': 'endpoints.json',
     'create': 'places',
     'search': 'places/%(lat)s,%(lon)s.json',
     }
