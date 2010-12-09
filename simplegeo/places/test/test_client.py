@@ -227,6 +227,22 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s,%s.json?q=monkeys&category=animal' % (API_VERSION, lat, lon))
         self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
 
+    def test_radius_search(self):
+        mockhttp = mock.Mock()
+        mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, json.dumps({'type': "FeatureColllection", 'features': []}))
+        self.client.http = mockhttp
+
+        lat = D('11.03')
+        lon = D('10.04')
+        radius = D('0.01')
+        res = self.client.search(lat, lon, radius=radius)
+        self.failUnless(isinstance(res, (list, tuple)), (repr(res), type(res)))
+        self.failUnlessEqual(len(res), 0)
+
+        self.assertEqual(mockhttp.method_calls[0][0], 'request')
+        self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s,%s.json?radius=%s' % (API_VERSION, lat, lon, radius))
+        self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
+
     def test_lat_lon_search(self):
         rec1 = Feature((D('11.03'), D('10.04')), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': "Bob's House Of Monkeys", 'category': "monkey dealership"})
         rec2 = Feature((D('11.03'), D('10.05')), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': "Monkey Food 'R' Us", 'category': "pet food store"})
