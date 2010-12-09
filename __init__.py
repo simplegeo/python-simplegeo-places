@@ -2,12 +2,14 @@ API_VERSION = '1.0'
 
 from pyutil.assertutil import precondition
 
-from simplegeo.shared import APIError, Feature, SIMPLEGEOHANDLE_RSTR, is_simplegeohandle, json_decode, is_valid_lat, is_valid_lon
+import urllib
+
+from simplegeo.shared import APIError, Feature, SIMPLEGEOHANDLE_RSTR, is_simplegeohandle, json_decode, is_valid_lat, is_valid_lon, is_numeric
 from simplegeo.shared import Client as SGClient
 
 endpoints = {
     'create': 'places',
-    'search': 'places/%(lat)s,%(lon)s.json',
+    'search': 'places/%(lat)s,%(lon)s.json%(quargs)s',
     }
 
 class Client(SGClient):
@@ -44,21 +46,25 @@ class Client(SGClient):
         endpoint = self._endpoint('feature', simplegeohandle=simplegeohandle)
         return self._request(endpoint, 'DELETE')[1]
 
-    def search(self, lat, lon, query='', category=''):
+    def search(self, lat, lon, radius=None, query=None, category=None):
         """Search for places near a lat/lon."""
         precondition(is_valid_lat(lat), lat)
         precondition(is_valid_lon(lon), lon)
+        precondition(radius is None or is_numeric(radius), radius)
+        precondition(query is None or isinstance(query, basestring), query)
+        precondition(category is None or isinstance(category, basestring), category)
 
-        endpoint = self._endpoint('search', lat=lat, lon=lon, query=query, category=category)
-
-        if query != '' or category != '':
-            endpoint = endpoint + '?'
-        if query != '':
-            endpoint = endpoint + 'q=' + query
-            if category != '':
-                endpoint = endpoint + '&category=' + category
-        elif category != '':
-            endpoint = endpoint + 'category=' + category
+        kwargs = { }
+        if radius:
+            kwargs['radius'] = radius
+        if query:
+            kwargs['q'] = query
+        if category:
+            kwargs['category'] = category
+        quargs = urllib.urlencode(kwargs)
+        if quargs:
+            quargs = '?'+quargs
+        endpoint = self._endpoint('search', lat=lat, lon=lon, quargs=quargs)
 
         result = self._request(endpoint, 'GET')[1]
 
