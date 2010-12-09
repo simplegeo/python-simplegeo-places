@@ -1,3 +1,12 @@
+python-simplegeo-places (2.0.78) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add radius query arg to search
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Thu, 09 Dec 2010 01:05:32 +0000
+
 python-simplegeo-places (2.0.77) lucid; urgency=low
 
   [ Zooko Ofsimplegeo ]
