@@ -1,3 +1,12 @@
+python-simplegeo-places (2.0.79) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add docstring saying the units of the radius option (kilometers)
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 14 Dec 2010 21:29:04 +0000
+
 python-simplegeo-places (2.0.78) lucid; urgency=low
 
   [ Zooko Ofsimplegeo ]
