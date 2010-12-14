@@ -47,7 +47,7 @@ class Client(SGClient):
         return self._request(endpoint, 'DELETE')[1]
 
     def search(self, lat, lon, radius=None, query=None, category=None):
-        """Search for places near a lat/lon."""
+        """Search for places near a lat/lon, within a radius (in kilometers)."""
         precondition(is_valid_lat(lat), lat)
         precondition(is_valid_lon(lon), lon)
         precondition(radius is None or is_numeric(radius), radius)
