@@ -1,3 +1,13 @@
+python-simplegeo-places (2.2.89) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add search by my IP, with docstring and tests, bump manual version
+    to v2.2
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 22 Dec 2010 19:51:53 +0000
+
 python-simplegeo-places (2.1.88) lucid; urgency=low
 
   [ Zooko Ofsimplegeo ]
