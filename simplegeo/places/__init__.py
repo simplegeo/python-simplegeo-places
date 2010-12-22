@@ -4,12 +4,13 @@ from pyutil.assertutil import precondition
 
 import urllib
 
-from simplegeo.shared import APIError, Feature, SIMPLEGEOHANDLE_RSTR, is_simplegeohandle, json_decode, is_valid_lat, is_valid_lon, is_numeric
+from simplegeo.shared import APIError, Feature, SIMPLEGEOHANDLE_RSTR, is_simplegeohandle, json_decode, is_valid_ip, is_valid_lat, is_valid_lon, is_numeric
 from simplegeo.shared import Client as SGClient
 
 endpoints = {
     'create': 'places',
     'search': 'places/%(lat)s,%(lon)s.json%(quargs)s',
+    'search_by_ip': 'places/%(ipaddr)s.json%(quargs)s',
     }
 
 class Client(SGClient):
@@ -65,6 +66,37 @@ class Client(SGClient):
         if quargs:
             quargs = '?'+quargs
         endpoint = self._endpoint('search', lat=lat, lon=lon, quargs=quargs)
+
+        result = self._request(endpoint, 'GET')[1]
+
+        fc = json_decode(result)
+        return [Feature.from_dict(f) for f in fc['features']]
+
+    def search_by_ip(self, ipaddr, radius=None, query=None, category=None):
+        """
+        Search for places near an IP address, within a radius (in
+        kilometers).
+
+        The server uses guesses the latitude and longitude from the
+        ipaddr and then does the same thing as search(), using that
+        guessed latitude and longitude.
+        """
+        precondition(is_valid_ip(ipaddr), ipaddr)
+        precondition(radius is None or is_numeric(radius), radius)
+        precondition(query is None or isinstance(query, basestring), query)
+        precondition(category is None or isinstance(category, basestring), category)
+
+        kwargs = { }
+        if radius:
+            kwargs['radius'] = radius
+        if query:
+            kwargs['q'] = query
+        if category:
+            kwargs['category'] = category
+        quargs = urllib.urlencode(kwargs)
+        if quargs:
+            quargs = '?'+quargs
+        endpoint = self._endpoint('search_by_ip', ipaddr=ipaddr, quargs=quargs)
 
         result = self._request(endpoint, 'GET')[1]
 
