@@ -1,3 +1,12 @@
+python-simplegeo-places (2.0.86) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * split version into manual and automatic components
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 22 Dec 2010 16:56:10 +0000
+
 python-simplegeo-places (2.0.83) lucid; urgency=low
 
   * UNRELEASED
