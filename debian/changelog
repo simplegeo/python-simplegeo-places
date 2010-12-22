@@ -1,3 +1,12 @@
+python-simplegeo-places (2.1.87) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add search_by_ip(), version bump to 2.1
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 22 Dec 2010 17:33:54 +0000
+
 python-simplegeo-places (2.0.86) lucid; urgency=low
 
   [ Zooko Ofsimplegeo ]
