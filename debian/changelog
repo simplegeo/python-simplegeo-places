@@ -1,3 +1,12 @@
+python-simplegeo-places (2.3.91) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add search-for-places-by-address, version 2.3
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 22 Dec 2010 20:50:38 +0000
+
 python-simplegeo-places (2.2.90) lucid; urgency=low
 
   * UNRELEASED
