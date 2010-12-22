@@ -12,6 +12,7 @@ endpoints = {
     'search': 'places/%(lat)s,%(lon)s.json%(quargs)s',
     'search_by_ip': 'places/%(ipaddr)s.json%(quargs)s',
     'search_by_my_ip': 'places/ip.json%(quargs)s',
+    'search_by_address': 'places/address.json?%(quargs)s',
     }
 
 class Client(SGClient):
@@ -129,6 +130,36 @@ class Client(SGClient):
         if quargs:
             quargs = '?'+quargs
         endpoint = self._endpoint('search_by_my_ip', quargs=quargs)
+
+        result = self._request(endpoint, 'GET')[1]
+
+        fc = json_decode(result)
+        return [Feature.from_dict(f) for f in fc['features']]
+
+    def search_by_address(self, address, radius=None, query=None, category=None):
+        """
+        Search for places near the given address, within a radius (in
+        kilometers).
+
+        The server figures out the latitude and longitude from the
+        street address and then does the same thing as search(), using
+        that deduced latitude and longitude.
+        """
+        precondition(isinstance(address, basestring), address)
+        precondition(address != '', address)
+        precondition(radius is None or is_numeric(radius), radius)
+        precondition(query is None or isinstance(query, basestring), query)
+        precondition(category is None or isinstance(category, basestring), category)
+
+        kwargs = { 'address': address }
+        if radius:
+            kwargs['radius'] = radius
+        if query:
+            kwargs['q'] = query
+        if category:
+            kwargs['category'] = category
+        quargs = urllib.urlencode(kwargs)
+        endpoint = self._endpoint('search_by_address', quargs=quargs)
 
         result = self._request(endpoint, 'GET')[1]
 
