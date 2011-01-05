@@ -57,6 +57,11 @@ class Client(SGClient):
         precondition(query is None or isinstance(query, basestring), query)
         precondition(category is None or isinstance(category, basestring), category)
 
+        if isinstance(query, unicode):
+            query = query.encode('utf-8')
+        if isinstance(category, unicode):
+            category = category.encode('utf-8')
+
         kwargs = { }
         if radius:
             kwargs['radius'] = radius
