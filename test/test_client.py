@@ -241,6 +241,39 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s,%s.json?q=monkeys&category=animal' % (API_VERSION, lat, lon))
         self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
 
+    def test_search_by_ip_nonascii(self):
+        rec1 = Feature((D('11.03'), D('10.04')), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': u"Bob's House Of M❤nkeys", 'category': u"m❤nkey dealership"})
+        rec2 = Feature((D('11.03'), D('10.05')), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': u"M❤nkey Food 'R' Us", 'category': "pet food store"})
+
+        mockhttp = mock.Mock()
+        mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, json.dumps({'type': "FeatureColllection", 'features': [rec1.to_dict(), rec2.to_dict()]}))
+        self.client.http = mockhttp
+
+        self.failUnlessRaises(AssertionError, self.client.search_by_ip, 'this is not an IP address at all, silly')
+        self.failUnlessRaises(AssertionError, self.client.search_by_ip, -81, 181) # Someone accidentally passed lat, lon to search_by_ip().
+
+        ipaddr = '192.0.32.10'
+
+        res = self.client.search_by_ip(ipaddr, query=u'm❤nkey', category='animal')
+        self.failUnless(isinstance(res, (list, tuple)), (repr(res), type(res)))
+        self.failUnlessEqual(len(res), 2)
+        self.failUnless(all(isinstance(f, Feature) for f in res))
+        self.assertEqual(mockhttp.method_calls[0][0], 'request')
+        urlused = mockhttp.method_calls[0][1][0]
+        urlused = urllib.unquote(urlused).decode('utf-8')
+        self.assertEqual(urlused, u'http://api.simplegeo.com:80/%s/places/%s.json?q=m❤nkey&category=animal' % (API_VERSION, ipaddr))
+        self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
+
+        res = self.client.search_by_ip(ipaddr, query=u'm❤nkey', category=u'❤nimal')
+        self.failUnless(isinstance(res, (list, tuple)), (repr(res), type(res)))
+        self.failUnlessEqual(len(res), 2)
+        self.failUnless(all(isinstance(f, Feature) for f in res))
+        self.assertEqual(mockhttp.method_calls[-1][0], 'request')
+        urlused = mockhttp.method_calls[-1][1][0]
+        urlused = urllib.unquote(urlused).decode('utf-8')
+        self.assertEqual(urlused, u'http://api.simplegeo.com:80/%s/places/%s.json?q=m❤nkey&category=❤nimal' % (API_VERSION, ipaddr))
+        self.assertEqual(mockhttp.method_calls[-1][1][1], 'GET')
+
     def test_search_by_ip(self):
         rec1 = Feature((D('11.03'), D('10.04')), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': "Bob's House Of Monkeys", 'category': "monkey dealership"})
         rec2 = Feature((D('11.03'), D('10.05')), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': "Monkey Food 'R' Us", 'category': "pet food store"})
@@ -262,6 +295,37 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/%s.json?q=monkeys&category=animal' % (API_VERSION, ipaddr))
         self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
 
+    def test_search_by_my_ip_nonascii(self):
+        rec1 = Feature((D('11.03'), D('10.04')), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': "Bob's House Of Monkeys", 'category': "monkey dealership"})
+        rec2 = Feature((D('11.03'), D('10.05')), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': "Monkey Food 'R' Us", 'category': "pet food store"})
+
+        mockhttp = mock.Mock()
+        mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, json.dumps({'type': "FeatureColllection", 'features': [rec1.to_dict(), rec2.to_dict()]}))
+        self.client.http = mockhttp
+
+        ipaddr = '192.0.32.10'
+        self.failUnlessRaises(AssertionError, self.client.search_by_my_ip, ipaddr) # Someone accidentally passed an ip addr to search_by_my_ip().
+
+        res = self.client.search_by_my_ip(query='monk❥y', category='animal')
+        self.failUnless(isinstance(res, (list, tuple)), (repr(res), type(res)))
+        self.failUnlessEqual(len(res), 2)
+        self.failUnless(all(isinstance(f, Feature) for f in res))
+        self.assertEqual(mockhttp.method_calls[-1][0], 'request')
+        urlused = mockhttp.method_calls[-1][1][0]
+        urlused = urllib.unquote(urlused).decode('utf-8')
+        self.assertEqual(urlused, u'http://api.simplegeo.com:80/%s/places/ip.json?q=monk❥y&category=animal' % (API_VERSION,))
+        self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
+
+        res = self.client.search_by_my_ip(query='monk❥y', category='anim❥l')
+        self.failUnless(isinstance(res, (list, tuple)), (repr(res), type(res)))
+        self.failUnlessEqual(len(res), 2)
+        self.failUnless(all(isinstance(f, Feature) for f in res))
+        self.assertEqual(mockhttp.method_calls[-1][0], 'request')
+        urlused = mockhttp.method_calls[-1][1][0]
+        urlused = urllib.unquote(urlused).decode('utf-8')
+        self.assertEqual(urlused, u'http://api.simplegeo.com:80/%s/places/ip.json?q=monk❥y&category=anim❥l' % (API_VERSION,))
+        self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
+
     def test_search_by_my_ip(self):
         rec1 = Feature((D('11.03'), D('10.04')), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': "Bob's House Of Monkeys", 'category': "monkey dealership"})
         rec2 = Feature((D('11.03'), D('10.05')), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': "Monkey Food 'R' Us", 'category': "pet food store"})
@@ -279,6 +343,42 @@ class ClientTest(unittest.TestCase):
         self.failUnless(all(isinstance(f, Feature) for f in res))
         self.assertEqual(mockhttp.method_calls[0][0], 'request')
         self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/places/ip.json?q=monkeys&category=animal' % (API_VERSION,))
+        self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
+
+    def test_search_by_address_nonascii(self):
+        rec1 = Feature((D('11.03'), D('10.04')), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': "Bob's House Of Monkeys", 'category': "monkey dealership"})
+        rec2 = Feature((D('11.03'), D('10.05')), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': "Monkey Food 'R' Us", 'category': "pet food store"})
+
+        mockhttp = mock.Mock()
+        mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, json.dumps({'type': "FeatureColllection", 'features': [rec1.to_dict(), rec2.to_dict()]}))
+        self.client.http = mockhttp
+
+        lat = D('11.03')
+        lon = D('10.04')
+        self.failUnlessRaises(AssertionError, self.client.search_by_address, lat, lon) # Someone accidentally passed a lat,lon to search_by_address().
+
+        addr = u'41 Decatur St, San Francisc❦, CA'
+        res = self.client.search_by_address(addr, query='monkeys', category='animal')
+        self.failUnless(isinstance(res, (list, tuple)), (repr(res), type(res)))
+        self.failUnlessEqual(len(res), 2)
+        self.failUnless(all(isinstance(f, Feature) for f in res))
+        self.assertEqual(mockhttp.method_calls[-1][0], 'request')
+        urlused = mockhttp.method_calls[-1][1][0]
+        cod = urllib.quote_plus(addr.encode('utf-8'))
+        self.assertEqual(urlused, 'http://api.simplegeo.com:80/%s/places/address.json?q=monkeys&category=animal&address=%s' % (API_VERSION, cod,))
+        self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
+
+        res = self.client.search_by_address(addr, query=u'monke❦s', category=u'ani❦al')
+        self.failUnless(isinstance(res, (list, tuple)), (repr(res), type(res)))
+        self.failUnlessEqual(len(res), 2)
+        self.failUnless(all(isinstance(f, Feature) for f in res))
+        self.assertEqual(mockhttp.method_calls[-1][0], 'request')
+        urlused = mockhttp.method_calls[-1][1][0]
+
+        quargs = {'q': u'monke❦s', 'category': u'ani❦al', 'address': addr}
+        equargs = dict( (k, v.encode('utf-8')) for k, v in quargs.iteritems() )
+        s2quargs = urllib.urlencode(equargs)
+        self.assertEqual(urlused, 'http://api.simplegeo.com:80/%s/places/address.json?%s' % (API_VERSION, s2quargs))
         self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
 
     def test_search_by_address(self):
@@ -472,7 +572,6 @@ class ClientTest(unittest.TestCase):
         handle = 'SG_abcdefghijklmnopqrstuv'
 
         mockhttp = mock.Mock()
-        # mockhttp.request.return_value = ({'status': '500', 'content-type': 'application/json', }, None)
         mockhttp.request.return_value = ({'status': '500', 'content-type': 'application/json', }, '{"message": "help my web server is confuzzled"}')
         self.client.http = mockhttp
 
