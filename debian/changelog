@@ -1,3 +1,14 @@
+python-simplegeo-places (2.3.95) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * utf-8 encode the search query and category before passing them to
+    urllib.encode() (hopefully fixes a failure report from a user
+    including non-ASCII chars in a query arg)
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 05 Jan 2011 19:03:04 +0000
+
 python-simplegeo-places (2.3.94) lucid; urgency=low
 
   * UNRELEASED
