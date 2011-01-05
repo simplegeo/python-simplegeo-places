@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import unittest, urllib
 from pyutil import jsonutil as json
 from simplegeo.places import Client, Feature, APIError
@@ -194,6 +196,29 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(mockhttp.method_calls[0][0], 'request')
         self.assertEqual(mockhttp.method_calls[0][1][0], 'http://api.simplegeo.com:80/%s/features/%s.json' % (API_VERSION, handle))
         self.assertEqual(mockhttp.method_calls[0][1][1], 'DELETE')
+
+    def test_search_nonascii(self):
+        rec1 = Feature((D('11.03'), D('10.04')), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': u"B❤b's House Of Monkeys", 'category': u"m❤nkey dealership"})
+        rec2 = Feature((D('11.03'), D('10.05')), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': u"M❤nkey Food 'R' Us", 'category': "pet food store"})
+
+        mockhttp = mock.Mock()
+        mockhttp.request.return_value = ({'status': '200', 'content-type': 'application/json', }, json.dumps({'type': "FeatureColllection", 'features': [rec1.to_dict(), rec2.to_dict()]}))
+        self.client.http = mockhttp
+
+        self.failUnlessRaises(AssertionError, self.client.search, -91, 100)
+        self.failUnlessRaises(AssertionError, self.client.search, -81, 181)
+
+        lat = D('11.03')
+        lon = D('10.04')
+        res = self.client.search(lat, lon, query=u'm❤nkey', category='animal')
+        self.failUnless(isinstance(res, (list, tuple)), (repr(res), type(res)))
+        self.failUnlessEqual(len(res), 2)
+        self.failUnless(all(isinstance(f, Feature) for f in res))
+        self.assertEqual(mockhttp.method_calls[0][0], 'request')
+        urlused = mockhttp.method_calls[0][1][0]
+        urlused = urllib.unquote(urlused).decode('utf-8')
+        self.assertEqual(urlused, u'http://api.simplegeo.com:80/%s/places/%s,%s.json?q=m❤nkey&category=animal' % (API_VERSION, lat, lon))
+        self.assertEqual(mockhttp.method_calls[0][1][1], 'GET')
 
     def test_search(self):
         rec1 = Feature((D('11.03'), D('10.04')), simplegeohandle='SG_abcdefghijkmlnopqrstuv', properties={'name': "Bob's House Of Monkeys", 'category': "monkey dealership"})
