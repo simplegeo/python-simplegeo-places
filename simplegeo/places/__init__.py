@@ -93,6 +93,11 @@ class Client(SGClient):
         precondition(query is None or isinstance(query, basestring), query)
         precondition(category is None or isinstance(category, basestring), category)
 
+        if isinstance(query, unicode):
+            query = query.encode('utf-8')
+        if isinstance(category, unicode):
+            category = category.encode('utf-8')
+
         kwargs = { }
         if radius:
             kwargs['radius'] = radius
@@ -123,6 +128,11 @@ class Client(SGClient):
         precondition(radius is None or is_numeric(radius), radius)
         precondition(query is None or isinstance(query, basestring), query)
         precondition(category is None or isinstance(category, basestring), category)
+
+        if isinstance(query, unicode):
+            query = query.encode('utf-8')
+        if isinstance(category, unicode):
+            category = category.encode('utf-8')
 
         kwargs = { }
         if radius:
@@ -155,6 +165,13 @@ class Client(SGClient):
         precondition(radius is None or is_numeric(radius), radius)
         precondition(query is None or isinstance(query, basestring), query)
         precondition(category is None or isinstance(category, basestring), category)
+
+        if isinstance(address, unicode):
+            address = address.encode('utf-8')
+        if isinstance(query, unicode):
+            query = query.encode('utf-8')
+        if isinstance(category, unicode):
+            category = category.encode('utf-8')
 
         kwargs = { 'address': address }
         if radius:
