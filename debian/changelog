@@ -1,3 +1,45 @@
+python-simplegeo-places (2.4.96) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * fix utf-8 encoding of all string args to all methods (includes
+    complete tests); version => 2.4
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 05 Jan 2011 22:57:04 +0000
+
+python-simplegeo-places (2.3.95) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * utf-8 encode the search query and category before passing them to
+    urllib.encode() (hopefully fixes a failure report from a user
+    including non-ASCII chars in a query arg)
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 05 Jan 2011 19:03:04 +0000
+
+python-simplegeo-places (2.3.94) lucid; urgency=low
+
+  * UNRELEASED
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 04 Jan 2011 23:03:28 +0000
+
+python-simplegeo-places (2.3.92) lucid; urgency=low
+
+  * UNRELEASED
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Thu, 23 Dec 2010 17:32:49 +0000
+
+python-simplegeo-places (2.3.91) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add search-for-places-by-address, version 2.3
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Wed, 22 Dec 2010 20:50:38 +0000
+
 python-simplegeo-places (2.2.90) lucid; urgency=low
 
   * UNRELEASED
