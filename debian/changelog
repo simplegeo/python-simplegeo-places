@@ -1,3 +1,16 @@
+python-simplegeo-places (2.4.105) lucid; urgency=low
+
+  [ Zooko Ofsimplegeo ]
+  * add test of handling of non-ascii, non-utf-8 bytes, fix tests to
+    take into account the new more lenient validation in python-
+    simplegeo-shared
+  * raise version number requirement on python-simplegeo-shared from >=
+    2.0 to >= 2.3.60
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Mon, 24 Jan 2011 18:46:27 +0000
+
 python-simplegeo-places (2.4.96) lucid; urgency=low
 
   [ Zooko Ofsimplegeo ]
